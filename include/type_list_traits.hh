@@ -32,12 +32,12 @@ namespace lp {
     struct repack<> {
         using type = type_list<>;
     };
-    
+
     template <typename ...Types>
     struct repack<type_list<>, Types...> {
         using type = typename type_list<>::template append<Types...>;
     };
-    
+
     template <typename ...Types1, typename ...Types2>
     struct repack<type_list<Types1...>, Types2...> {
         using type = typename repack<Types1...>::type::template extend<typename repack<Types2...>::type>;

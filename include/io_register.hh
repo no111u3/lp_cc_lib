@@ -60,12 +60,12 @@ namespace lp {
             get() &= ~op_unpack<Type, 0, Ops...>::value;
         }
 
-        static void set_value(Type value) noexcept {
+        static constexpr void set_value(const Type value) noexcept {
             get() = value;
         }
 
         template <typename ...Ops>
-        static void modify() noexcept {
+        static constexpr void modify() noexcept {
             get() = op_unpack_func<Type, Ops...>::get_value(get());
         }
     };

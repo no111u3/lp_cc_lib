@@ -67,42 +67,42 @@ namespace lp {
 
     template <typename T, typename Op>
     struct op_apply_func<T, Op, and_type> {
-        static T get_value(T value) noexcept {
+        static constexpr T get_value(const T value) noexcept {
             return value & Op::template mask<T>::value;
         }
     };
 
     template <typename T, typename Op>
     struct op_apply_func<T, Op, or_type> {
-        static T get_value(T value) noexcept {
+        static constexpr T get_value(const T value) noexcept {
             return value | Op::template mask<T>::value;
         }
     };
 
     template <typename T, typename Op>
     struct op_apply_func<T, Op, nand_type> {
-        static T get_value(T value) noexcept {
+        static constexpr T get_value(const T value) noexcept {
             return value & ~Op::template mask<T>::value;
         }
     };
 
     template <typename T, typename Op>
     struct op_apply_func<T, Op, nor_type> {
-        static T get_value(T value) noexcept {
+        static constexpr T get_value(const T value) noexcept {
             return value | ~Op::template mask<T>::value;
         }
     };
 
     template <typename T, typename Op>
     struct op_apply_func<T, Op, xor_type> {
-        static T get_value(T value) noexcept {
+        static constexpr T get_value(const T value) noexcept {
             return value ^ Op::template mask<T>::value;
         }
     };
 
     template <typename T, typename Op>
     struct op_apply_func<T, Op, nxor_type> {
-        static T get_value(T value) noexcept {
+        static constexpr T get_value(const T value) noexcept {
             return value ^ ~Op::template mask<T>::value;
         }
     };
@@ -136,21 +136,21 @@ namespace lp {
 
     template <typename T>
     struct op_unpack_func<T> {
-        static T get_value(T value) noexcept {
+        static constexpr T get_value(const T value) noexcept {
             return value;
         }
     };
 
     template <typename T, typename ...Ops>
     struct op_unpack_func<T, type_list<Ops...>> {
-        static T get_value (T value) noexcept {
+        static constexpr T get_value (const T value) noexcept {
             return op_unpack_func<T, Ops...>::get_value(value);
         }
     };
 
     template <typename T, typename Op, typename ...Ops>
     struct op_unpack_func<T, Op, Ops...> {
-        static T get_value (T value) noexcept {
+        static constexpr T get_value (const T value) noexcept {
             return op_unpack_func<T, Ops...>::get_value(
                 op_apply_func<T, Op, typename Op::type>::get_value(value));
         }

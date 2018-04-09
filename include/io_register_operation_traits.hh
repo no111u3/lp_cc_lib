@@ -31,28 +31,28 @@ namespace lp {
 
     template <typename Register, typename Op_list>
     struct register_op_apply<Register, Op_list, set_type> {
-        static void apply() noexcept {
+        static constexpr void apply() noexcept {
             Register::template set<Op_list>();
         }
     };
 
     template <typename Register, typename Op_list>
     struct register_op_apply<Register, Op_list, set_or_type> {
-        static void apply() noexcept {
+        static constexpr void apply() noexcept {
             Register::template set_or<Op_list>();
         }
     };
 
     template <typename Register, typename Op_list>
     struct register_op_apply<Register, Op_list, set_nand_type> {
-        static void apply() noexcept {
+        static constexpr void apply() noexcept {
             Register::template set_nand<Op_list>();
         }
     };
 
     template <typename Register, typename Op_list>
     struct register_op_apply<Register, Op_list, modify_type> {
-        static void apply() noexcept {
+        static constexpr void apply() noexcept {
             Register::template modify<Op_list>();
         }
     };
@@ -63,31 +63,31 @@ namespace lp {
 
     template <typename Register>
     struct register_op_unpack<Register, type_list<>> {
-        static void apply() noexcept {
+        static constexpr void apply() noexcept {
         }
     };
 
     template <typename ...Ops>
     struct register_op_unpack<type_list<>, type_list<Ops...>> {
-        static void apply() noexcept {
+        static constexpr void apply() noexcept {
         }
     };
 
     template <typename ...Regs>
     struct register_op_unpack<type_list<Regs...>, type_list<>> {
-        static void apply() noexcept {
+        static constexpr void apply() noexcept {
         }
     };
 
     template <>
     struct register_op_unpack<type_list<>, type_list<>> {
-        static void apply() noexcept {
+        static constexpr void apply() noexcept {
         }
     };
 
     template <typename Register, typename ...Ops>
     struct register_op_unpack<Register, type_list<Ops...>> {
-        static void apply() noexcept {
+        static constexpr void apply() noexcept {
             register_op_apply<Register, type_list<Ops...>, typename Register::type>::apply();
         }
     };
@@ -102,7 +102,7 @@ namespace lp {
         using is_same_type =
             std::is_same<typename current_register::register_type, typename T::register_type>;
 
-        static void apply() noexcept {
+        static constexpr void apply() noexcept {
             register_op_unpack<current_register, typename op_list::template filter<is_same_type>>::apply();
             register_op_unpack<tail, typename op_list::template remove<is_same_type>>::apply();
         }

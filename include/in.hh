@@ -30,7 +30,7 @@ namespace lp {
         using inner = Inner;
         static constexpr auto t_bit_size = sizeof(Type) * 8;
 
-        static void recv(i8_t &symbol) {
+        static constexpr void recv(i8_t &symbol) {
             symbol = inner::recv();
             if (echo) {
                 inner::send(symbol);
@@ -38,7 +38,7 @@ namespace lp {
         }
 
         template <Type N>
-        static void recv(i8_t (&string)[N]) {
+        static constexpr void recv(i8_t (&string)[N]) {
             auto beg = string;
             const auto end = beg + N - 1;
 
@@ -56,7 +56,7 @@ namespace lp {
         }
 
         template <typename T>
-        static void recv(T &number) {
+        static constexpr void recv(T &number) {
             number = 0;
             i8_t buffer[t_bit_size + 1];
 
@@ -91,18 +91,18 @@ namespace lp {
         }
 
         template <typename In, typename ...Ins>
-        static void recv(In &in, Ins &...ins) {
+        static constexpr void recv(In &in, Ins &...ins) {
             recv(in);
             recv(ins...);
         }
     private:
-        static bool default_checker (i8_t ch) {
+        static constexpr bool default_checker (i8_t ch) {
             return (ch == '\n' || ch == '\r') ?
                 true : false;
         }
 
         template <typename T>
-        static void convert(i8_t *beg, i8_t *end, T &number) {
+        static constexpr void convert(i8_t *beg, i8_t *end, T &number) {
             auto base = 10;
 
             if (*beg == '0') {

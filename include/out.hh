@@ -45,26 +45,26 @@ namespace lp {
         };
 
         template <typename T>
-        static to_base<T> make_base(const base bs, const T t) {
+        static constexpr to_base<T> make_base(const base bs, const T t) {
             return to_base<T>{bs, t};
         }
 
-        static void send(const i8_t symbol) {
+        static constexpr void send(const i8_t symbol) {
             outer::send(symbol);
         }
 
-        static void send(const i8_t *string) {
+        static constexpr void send(const i8_t *string) {
             while (*string != '\0') {
                 outer::send(*string++);
             }
         }
 
-        static void send(const i16_t number,
+        static constexpr void send(const i16_t number,
             const base out_base = base::dec) {
             send(static_cast<i32_t>(number), out_base);
         }
 
-        static void send(const i32_t number,
+        static constexpr void send(const i32_t number,
             const base out_base = base::dec) {
             if (number < 0) {
                 send('-');
@@ -74,22 +74,22 @@ namespace lp {
             }
         }
 
-        static void send(const u8_t number,
+        static constexpr void send(const u8_t number,
             const base out_base = base::dec) {
             send(static_cast<u32_t>(number), out_base);
         }
 
-        static void send(const u16_t number,
+        static constexpr void send(const u16_t number,
             const base out_base = base::dec) {
             send(static_cast<u32_t>(number), out_base);
         }
 
         template <typename T>
-        static void send(const to_base<T> t) {
+        static constexpr void send(const to_base<T> t) {
             send(t.t, t.bs);
         }
 
-        static void send(const u32_t number,
+        static constexpr void send(const u32_t number,
             const base out_base = base::dec) {
             i8_t output_buff[t_bit_size + 1]; // number of bits + '\0'
 
@@ -100,12 +100,12 @@ namespace lp {
         }
 
         template <typename Out, typename ...Outs>
-        static void send(Out out, Outs ...outs) {
+        static constexpr void send(Out out, Outs ...outs) {
             send(out);
             send(outs...);
         }
     private:
-        static const i8_t * convert(
+        static constexpr i8_t * convert(
             i8_t *output_buff,
             u32_t number,
             const base out_base) {
