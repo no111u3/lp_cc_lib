@@ -59,6 +59,104 @@ namespace std {
     struct conditional<false, TrueType, FalseType> {
         using type = FalseType;
     };
+
+    /// Define typename if true
+    template <bool Cond, typename T = void>
+    struct enable_if {};
+    
+    template <typename T>
+    struct enable_if<true, T> { using type = T; };
+
+    /// Helper for enable_if
+    template <bool Cond, typename T = void>
+    using enable_if_t = typename enable_if<Cond, T>::type;
+
+    // Const and volatile modification
+    /// Remove const
+    template <typename T>
+    struct remove_const {
+        using type = T;
+    };
+    
+    template <typename T>
+    struct remove_const<const T> {
+        using type = T;
+    };
+
+    /// Remove volatile
+    template <typename T>
+    struct remove_volatile {
+        using type = T;
+    };
+
+    template <typename T>
+    struct remove_volatile<volatile T> {
+        using type = T;
+    };
+
+    /// Remove const and volatile
+    template <typename T>
+    struct remove_cv {
+        using type = typename remove_volatile<typename remove_const<T>::type>::type;
+    };
+
+    template <typename T>
+    using remove_cv_t = typename remove_cv<T>::type;
+
+    template <typename T>
+    using remove_const_t = typename remove_const<T>::type;
+
+    template <typename T>
+    using remove_volatile_t = typename remove_volatile<T>::type;
+
+    /// Add const
+    template <typename T>
+    struct add_const {
+        using type = const T;
+    };
+
+    /// Add volatile
+    template <typename T>
+    struct add_volatile {
+        using type = volatile T;
+    };
+
+    /// Add const and volatile
+    template <typename T>
+    struct add_cv {
+        using type = typename add_const<typename add_volatile<T>::type>::type;
+    };
+
+    /// Add const, volatile and cv helpers
+    template <typename T>
+    using add_cv_t = typename add_cv<T>::type;
+
+    template <typename T>
+    using add_const_t = typename add_const<T>::type;
+
+    template <typename T>
+    using add_volatile_t = typename add_volatile<T>::type;
+
+    // Check const and volatile
+    /// Check const
+    template <typename T>
+    struct is_const : false_type {};
+
+    template <typename T>
+    struct is_const<const T> : true_type {};
+
+    /// Check volatile
+    template <typename T>
+    struct is_volatile : false_type {};
+
+    template <typename T>
+    struct is_volatile<volatile T> : true_type {};
+
+    template <typename T>
+    using is_const_v = typename is_const<T>::value;
+
+    template <typename T>
+    using is_volatile_v = typename is_volatile<T>::value;
 } // namespace std
 
 #endif // LP_CC_LIB_TYPE_TRAITS

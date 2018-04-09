@@ -12,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Type list reperpesentation layer
  * Lepestrum C++ Library implementation
+ * Type list reperpesentation layer
  * @file type_list.hh
  * @author Boris Vinogradov
  */
