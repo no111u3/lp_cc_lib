@@ -37,15 +37,8 @@ namespace lp {
     using word_t = unsigned long;
     using iword_t = long;
 
-    // address types and constants
-    enum struct arch_defines {
-        word_bits = 32,
-        address_shift = 12
-    };
-
+    // address types
     using addr_t = word_t;
-
-    const addr_t invalid_addr = ~0UL;
 
     // atomics
     using small_atomic_t = signed char;
