@@ -14,12 +14,14 @@
  *
  * Lepestrum C++ Library implementation
  * C++ meta type traits
- * @file type_traits
+ * @file type_traits.hh
  * @author Boris Vinogradov
  */
 
-#ifndef LP_CC_LIB_TYPE_TRAITS
-#define LP_CC_LIB_TYPE_TRAITS
+#include <internal/std_types.hh>
+
+#ifndef LP_CC_LIB_TYPE_TRAITS_HH
+#define LP_CC_LIB_TYPE_TRAITS_HH
 
 namespace std {
     /// The type used as compiled-time none type
@@ -63,7 +65,7 @@ namespace std {
     /// Define typename if true
     template <bool Cond, typename T = void>
     struct enable_if {};
-    
+
     template <typename T>
     struct enable_if<true, T> { using type = T; };
 
@@ -77,7 +79,7 @@ namespace std {
     struct remove_const {
         using type = T;
     };
-    
+
     template <typename T>
     struct remove_const<const T> {
         using type = T;
@@ -100,6 +102,7 @@ namespace std {
         using type = typename remove_volatile<typename remove_const<T>::type>::type;
     };
 
+    /// Remove const, volatile and cv helpers
     template <typename T>
     using remove_cv_t = typename remove_cv<T>::type;
 
@@ -152,11 +155,126 @@ namespace std {
     template <typename T>
     struct is_volatile<volatile T> : true_type {};
 
+    // Void check
     template <typename T>
-    using is_const_v = typename is_const<T>::value;
+    struct is_void_helper
+        : false_type {};
+
+    template <>
+    struct is_void_helper<void>
+        : true_type {};
+
+    /// Is void
+    template <typename T>
+    struct is_void
+        : is_void_helper<remove_cv_t<T>>::type {};
+
+    // Integral check
+    template <typename T>
+    struct is_integral_helper
+        : false_type {};
+
+    template <>
+    struct is_integral_helper<bool>
+        : true_type {};
+
+    template <>
+    struct is_integral_helper<char>
+        : true_type {};
+
+    template <>
+    struct is_integral_helper<signed char>
+        : true_type {};
+
+    template <>
+    struct is_integral_helper<unsigned char>
+        : true_type {};
+
+    template <>
+    struct is_integral_helper<short>
+        : true_type {};
+
+    template <>
+    struct is_integral_helper<unsigned short>
+        : true_type {};
+
+    template <>
+    struct is_integral_helper<int>
+        : true_type {};
+
+    template <>
+    struct is_integral_helper<unsigned int>
+        : true_type {};
+
+    template <>
+    struct is_integral_helper<long>
+        : true_type {};
+
+    template <>
+    struct is_integral_helper<unsigned long>
+        : true_type {};
+
+    template <>
+    struct is_integral_helper<long long>
+        : true_type {};
+
+    template <>
+    struct is_integral_helper<unsigned long long>
+        : true_type {};
+
+    /// Is integral
+    template <typename T>
+    struct is_integral
+        : is_integral_helper<remove_cv_t<T>>::type {};
+
+    // Float check
+    template <typename T>
+    struct is_floating_point_helper
+        : false_type {};
+
+    template <>
+    struct is_floating_point_helper<float>
+        : true_type {};
+
+    template <>
+    struct is_floating_point_helper<double>
+        : true_type {};
+
+    template <>
+    struct is_floating_point_helper<long double>
+        : true_type {};
+
+    /// Is integral
+    template <typename T>
+    struct is_floating_point
+        : is_floating_point_helper<remove_cv_t<T>>::type {};
+
+    /// Is array
+    template <typename T>
+    struct is_array
+        : false_type {};
+
+    template <typename T, size_t Size>
+    struct is_array<T[Size]>
+        : true_type {};
 
     template <typename T>
-    using is_volatile_v = typename is_volatile<T>::value;
+    struct is_array<T[]>
+        : true_type {};
+
+    // Pointer check
+    template <typename T>
+    struct is_pointer_helper
+        : false_type {};
+
+    template <typename T>
+    struct is_pointer_helper<T *>
+        : true_type {};
+
+    /// Is pointer
+    template <typename T>
+    struct is_pointer
+        : is_pointer_helper<remove_cv_t<T>>::type {};
 } // namespace std
 
-#endif // LP_CC_LIB_TYPE_TRAITS
+#endif // LP_CC_LIB_TYPE_TRAITS_HH
