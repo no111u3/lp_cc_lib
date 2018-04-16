@@ -33,7 +33,7 @@ namespace lp {
     /// Impementation of bit for single bits
     template <word_t Position>
     struct bit<Position> : operations<bit<Position>> {
-        static_assert(Position < sizeof(word_t) * 8, "Can't create overflow bit");
+        static_assert(Position < sizeof(u64_t) * 8, "Can't create overflow bit");
         static constexpr word_t position = Position;
 
         template<typename T>
@@ -45,7 +45,7 @@ namespace lp {
     /// Impementation of bit for multiple bits
     template <word_t Position, word_t Width>
     struct bit<Position, Width> : operations<bit<Position, Width>> {
-        static_assert(Position + Width < sizeof(word_t) * 8, "Can't create overflow bit");
+        static_assert(Position + Width < sizeof(u64_t) * 8, "Can't create overflow bit");
         static constexpr word_t position = Position;
         static constexpr word_t width = Width;
         static constexpr word_t default_value = (1 << width) - 1;
