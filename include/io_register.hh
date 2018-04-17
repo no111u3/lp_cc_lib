@@ -50,6 +50,11 @@ namespace lp {
             get() = op_unpack<Type, 0, Ops...>::value;
         }
 
+        template <word_t Shift, typename ...Ops>
+        static constexpr void set() noexcept {
+            get() = op_unpack<Type, 0, Ops...>::value << Shift;
+        }
+
         template <typename ...Ops>
         static constexpr void set_or() noexcept {
             get() |= op_unpack<Type, 0, Ops...>::value;
