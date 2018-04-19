@@ -40,6 +40,8 @@ struct D1 {
 
 enum E {};
 
+enum class E1 : int {};
+
 class F { virtual void foo() = 0; };
 
 struct G : F {};
@@ -80,9 +82,15 @@ void type_traits_test() {
     static_assert(is_convertible<G*, F*>::value == true, "");
     static_assert(is_convertible<int, long>::value == true, "");
 
-    static_assert(is_same<conditional<true, int, double>::type, int>::value, "");
-    static_assert(is_same<conditional<false, int, double>::type, double>::value, "");
+    static_assert(is_same<conditional_t<true, int, double>, int>::value, "");
+    static_assert(is_same<conditional_t<false, int, double>, double>::value, "");
 
+    static_assert(is_same<common_type_t<int, double>, double>::value, "");
+    static_assert(is_same<common_type_t<char, int, short>, int>::value, "");
+
+    static_assert(is_same<underlying_type_t<E>, unsigned int>::value == true, "");
+    static_assert(is_same<underlying_type_t<E1>, int>::value == true, "");
+    
     static_assert(or_pred<false_type, true_type, false_type>::value == true, "");
     static_assert(and_pred<true_type, false_type, true_type>::value == false, "");
     static_assert(not_pred<true_type>::value == false, "");
@@ -113,6 +121,14 @@ void type_traits_test() {
     static_assert(is_same<add_pointer_t<int>, int *>::value, "");
     static_assert(is_same<add_pointer_t<int *>, int **>::value, "");
     static_assert(is_same<add_pointer_t<int **>, int ***>::value, "");
+
+    static_assert(is_same<make_signed_t<char>, signed char>::value, "");
+    static_assert(is_same<make_signed_t<const int>, const signed int>::value, "");
+    static_assert(is_same<make_signed_t<volatile long>, signed volatile long>::value, "");
+
+    static_assert(is_same<make_unsigned_t<char>, unsigned char>::value, "");
+    static_assert(is_same<make_unsigned_t<const int>, const unsigned int>::value, "");
+    static_assert(is_same<make_unsigned_t<volatile long>, unsigned volatile long>::value, "");
 
     static_assert(is_same<remove_extent_t<int[2][3]>, int[3]>::value, "");
     static_assert(is_same<remove_extent_t<int[2]>, int>::value, "");
@@ -320,6 +336,9 @@ void type_traits_test() {
     static_assert(is_nothrow_destructible<A>::value == true, "");
     static_assert(is_trivially_destructible<A>::value == true, "");
 
+    static_assert(has_virtual_destructor<A>::value == false, "");
+    static_assert(has_virtual_destructor<C>::value == true, "");
+    
     static_assert(has_trivial_destructor<A>::value == true, "");
     static_assert(has_trivial_destructor<C>::value == false, "");
 

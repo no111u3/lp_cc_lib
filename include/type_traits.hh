@@ -20,6 +20,8 @@
 
 #include <internal/std_types.hh>
 
+#include <algorithm.hh>
+
 #ifndef LP_CC_LIB_TYPE_TRAITS_HH
 #define LP_CC_LIB_TYPE_TRAITS_HH
 
@@ -62,6 +64,9 @@ namespace std {
         using type = FalseType;
     };
 
+    template <bool Cond, typename TrueType, typename FalseType>
+    using conditional_t = typename conditional<Cond, TrueType, FalseType>::type;
+
     // Predicates
     /// Or predicate
     template <typename ...Ts>
@@ -77,11 +82,11 @@ namespace std {
 
     template <typename T1, typename T2>
     struct or_pred<T1, T2>
-        : conditional<T1::value, T1, T2>::type {};
+        : conditional_t<T1::value, T1, T2> {};
 
     template <typename T1, typename T2, typename T3, typename ...Ts>
     struct or_pred<T1, T2, T3, Ts...>
-        : conditional<T1::value, T1, or_pred<T2, T3, Ts...>>::type {};
+        : conditional_t<T1::value, T1, or_pred<T2, T3, Ts...>> {};
 
     /// And predicate
     template <typename ...Ts>
@@ -97,11 +102,11 @@ namespace std {
 
     template <typename T1, typename T2>
     struct and_pred<T1, T2>
-        : conditional<T1::value, T2, T1>::type {};
+        : conditional_t<T1::value, T2, T1> {};
 
     template <typename T1, typename T2, typename T3, typename ...Ts>
     struct and_pred<T1, T2, T3, Ts...>
-        : conditional<T1::value, and_pred<T2, T3, Ts...>, T1>::type {};
+        : conditional_t<T1::value, and_pred<T2, T3, Ts...>, T1> {};
 
     /// Not predicate
     template <typename T>
@@ -212,84 +217,88 @@ namespace std {
         : is_same<nullptr_t, remove_cv_t<T>> {};
 
     // Integral check
-    template <typename T>
-    struct is_integral_helper
-        : false_type {};
+    namespace internal {
+        template <typename T>
+        struct is_integral_h
+            : false_type {};
 
-    template <>
-    struct is_integral_helper<bool>
-        : true_type {};
+        template <>
+        struct is_integral_h<bool>
+            : true_type {};
 
-    template <>
-    struct is_integral_helper<char>
-        : true_type {};
+        template <>
+        struct is_integral_h<char>
+            : true_type {};
 
-    template <>
-    struct is_integral_helper<signed char>
-        : true_type {};
+        template <>
+        struct is_integral_h<signed char>
+            : true_type {};
 
-    template <>
-    struct is_integral_helper<unsigned char>
-        : true_type {};
+        template <>
+        struct is_integral_h<unsigned char>
+            : true_type {};
 
-    template <>
-    struct is_integral_helper<short>
-        : true_type {};
+        template <>
+        struct is_integral_h<short>
+            : true_type {};
 
-    template <>
-    struct is_integral_helper<unsigned short>
-        : true_type {};
+        template <>
+        struct is_integral_h<unsigned short>
+            : true_type {};
 
-    template <>
-    struct is_integral_helper<int>
-        : true_type {};
+        template <>
+        struct is_integral_h<int>
+            : true_type {};
 
-    template <>
-    struct is_integral_helper<unsigned int>
-        : true_type {};
+        template <>
+        struct is_integral_h<unsigned int>
+            : true_type {};
 
-    template <>
-    struct is_integral_helper<long>
-        : true_type {};
+        template <>
+        struct is_integral_h<long>
+            : true_type {};
 
-    template <>
-    struct is_integral_helper<unsigned long>
-        : true_type {};
+        template <>
+        struct is_integral_h<unsigned long>
+            : true_type {};
 
-    template <>
-    struct is_integral_helper<long long>
-        : true_type {};
+        template <>
+        struct is_integral_h<long long>
+            : true_type {};
 
-    template <>
-    struct is_integral_helper<unsigned long long>
-        : true_type {};
+        template <>
+        struct is_integral_h<unsigned long long>
+            : true_type {};
+    } // namespace internal
 
     /// Is integral
     template <typename T>
     struct is_integral
-        : is_integral_helper<remove_cv_t<T>>::type {};
+        : internal::is_integral_h<remove_cv_t<T>>::type {};
 
     // Float check
-    template <typename T>
-    struct is_floating_point_helper
-        : false_type {};
+    namespace internal {
+        template <typename T>
+        struct is_floating_point_h
+            : false_type {};
 
-    template <>
-    struct is_floating_point_helper<float>
-        : true_type {};
+        template <>
+        struct is_floating_point_h<float>
+            : true_type {};
 
-    template <>
-    struct is_floating_point_helper<double>
-        : true_type {};
+        template <>
+        struct is_floating_point_h<double>
+            : true_type {};
 
-    template <>
-    struct is_floating_point_helper<long double>
-        : true_type {};
+        template <>
+        struct is_floating_point_h<long double>
+            : true_type {};
+    }
 
-    /// Is integral
+    /// Is floating point
     template <typename T>
     struct is_floating_point
-        : is_floating_point_helper<remove_cv_t<T>>::type {};
+        : internal::is_floating_point_h<remove_cv_t<T>>::type {};
 
     /// Is array
     template <typename T>
@@ -421,18 +430,20 @@ namespace std {
         : true_type {};
 
     // Pointer check
-    template <typename T>
-    struct is_pointer_helper
-        : false_type {};
+    namespace internal {
+        template <typename T>
+        struct is_pointer_h
+            : false_type {};
 
-    template <typename T>
-    struct is_pointer_helper<T *>
-        : true_type {};
+        template <typename T>
+        struct is_pointer_h<T *>
+            : true_type {};
+    } // namespace internal
 
     /// Is pointer
     template <typename T>
     struct is_pointer
-        : is_pointer_helper<remove_cv_t<T>>::type {};
+        : internal::is_pointer_h<remove_cv_t<T>>::type {};
 
     /// Is lvalue reference
     template <typename T>
@@ -453,30 +464,34 @@ namespace std {
         : true_type {};
 
     /// Is member pointer
-    template <typename T>
-    struct is_member_pointer_helper
-        : false_type {};
+    namespace internal {
+        template <typename T>
+        struct is_member_pointer_h
+            : false_type {};
 
-    template <typename T, typename U>
-    struct is_member_pointer_helper<T U::*>
-        : true_type {};
-
+        template <typename T, typename U>
+        struct is_member_pointer_h<T U::*>
+            : true_type {};
+    } // namespace internal
+            
     template <typename T>
     struct is_member_pointer
-        : is_member_pointer_helper<remove_cv_t<T>> {};
+        : internal::is_member_pointer_h<remove_cv_t<T>> {};
 
     /// Is member function pointer
-    template <typename T>
-    struct is_member_function_pointer_helper
-        : false_type {};
+    namespace internal {
+        template <typename T>
+        struct is_member_function_pointer_h
+            : false_type {};
 
-    template <typename T, typename U>
-    struct is_member_function_pointer_helper<T U::*>
-        : is_function<T> {};
+        template <typename T, typename U>
+        struct is_member_function_pointer_h<T U::*>
+            : is_function<T> {};
+    } // namespace internal
 
     template <typename T>
     struct is_member_function_pointer
-        : is_member_function_pointer_helper<remove_cv_t<T>> {};
+        : internal::is_member_function_pointer_h<remove_cv_t<T>> {};
 
     /// Is member object pointer
     template <typename T>
@@ -545,37 +560,41 @@ namespace std {
         : true_type {};
 
     /// Add lvalue reference
-    template <typename T, bool = is_referenceable<T>::value>
-    struct add_lvalue_reference_helper {
-        using type = T;
-    };
+    namespace internal {
+        template <typename T, bool = is_referenceable<T>::value>
+        struct add_lvalue_reference_h {
+            using type = T;
+        };
 
-    template <typename T>
-    struct add_lvalue_reference_helper<T, true> {
-        using type = T &;
-    };
+        template <typename T>
+        struct add_lvalue_reference_h<T, true> {
+            using type = T &;
+        };
+    }
 
     template <typename T>
     struct add_lvalue_reference
-        : add_lvalue_reference_helper<T> {};
+        : internal::add_lvalue_reference_h<T> {};
 
     template <typename T>
     using add_lvalue_reference_t = typename add_lvalue_reference<T>::type;
 
     /// Add rvalue reference
-    template <typename T, bool = is_referenceable<T>::value>
-    struct add_rvalue_reference_helper {
-        using type = T;
-    };
+    namespace internal {
+        template <typename T, bool = is_referenceable<T>::value>
+        struct add_rvalue_reference_h {
+            using type = T;
+        };
 
-    template <typename T>
-    struct add_rvalue_reference_helper<T, true> {
-        using type = T &&;
-    };
+        template <typename T>
+        struct add_rvalue_reference_h<T, true> {
+            using type = T &&;
+        };
+    } // namespace internal
 
     template <typename T>
     struct add_rvalue_reference
-        : add_rvalue_reference_helper<T> {};
+        : internal::add_rvalue_reference_h<T> {};
 
     template <typename T>
     using add_rvalue_reference_t = typename add_rvalue_reference<T>::type;
@@ -629,12 +648,44 @@ namespace std {
     using remove_pointer_t = typename remove_pointer<T>::type;
 
     /// Add pointer
-    template <typename T, bool is_function_type = false>
-    struct add_pointer_internal {
-        using type = remove_reference_t<T> *;
+    namespace internal {
+        template <typename T, bool is_function_type = false>
+        struct add_pointer_h {
+            using type = remove_reference_t<T> *;
+        };
+        
+        template <typename T>
+        struct add_pointer_h<T, true> {
+            using type = T;
+        };
+
+        template <typename T, typename ...Args>
+        struct add_pointer_h<T(Args...), true> {
+            using type = T(*)(Args...);
+        };
+
+        template <typename T, class ...Args>
+        struct add_pointer_h<T(Args..., ...), true> {
+            using type = T(*)(Args..., ...);
+        };
+    } // namespace internal
+    
+    template <typename T>
+    struct add_pointer
+        : internal::add_pointer_h<T, is_function<T>::value> {};
+
+    template <typename T>
+    using add_pointer_t = typename add_pointer<T>::type;
+
+    template<size_t Len>
+    struct aligned_storage_h { 
+        union type {
+            unsigned char data[Len];
+            struct alignas(size_t) { } align; 
+        };
     };
 
-    template <size_t Len, size_t Align>
+    template <size_t Len, size_t Align = alignof(aligned_storage_h<Len>)>
     struct aligned_storage {
         struct type {
             alignas(Align) unsigned char data[Len];
@@ -644,28 +695,18 @@ namespace std {
     template <size_t Len, size_t Align>
     using aligned_storage_t = typename aligned_storage<Len, Align>::type;
 
-    template <typename T>
-    struct add_pointer_internal<T, true> {
-        using type = T;
+    template <size_t Len, typename ...Types>
+    struct aligned_union {
+        static constexpr size_t alignment_value = max({alignof(Types)...});
+
+        struct type {
+            alignas(alignment_value) char s[max({Len, sizeof(Types)...})];
+        };
     };
 
-    template <typename T, typename ...Args>
-    struct add_pointer_internal<T(Args...), true> {
-        using type = T(*)(Args...);
-    };
-
-    template <typename T, class ...Args>
-    struct add_pointer_internal<T(Args..., ...), true> {
-        using type = T(*)(Args..., ...);
-    };
-
-    template <typename T>
-    struct add_pointer
-        : add_pointer_internal<T, is_function<T>::value> {};
-
-    template <typename T>
-    using add_pointer_t = typename add_pointer<T>::type;
-
+    template <size_t Len, typename ...Types>
+    using aligned_union_t = typename aligned_union<Len, Types...>::type;
+    
     /// Extent
     template <typename, unsigned = 0>
     struct extent;
@@ -743,7 +784,7 @@ namespace std {
 
     /// Declare value
     template <typename T>
-    struct declval_internal {
+    struct declval_h {
         static add_rvalue_reference_t<T> delegate();
     };
 
@@ -754,36 +795,38 @@ namespace std {
 
     template <typename T>
     inline add_rvalue_reference_t<T> declval() noexcept {
-        return declval_internal<T>::delegate();
+        return declval_h<T>::delegate();
     }
 
     /// Is convertible
-    template <typename From, typename To,
-        bool = or_pred<is_void<From>, is_function<To>, is_array<To>>::value>
-    struct is_convertible_helper {
-        using type = typename is_void<To>::type;
-    };
+    namespace internal {
+        template <typename From, typename To,
+            bool = or_pred<is_void<From>, is_function<To>, is_array<To>>::value>
+        struct is_convertible_h {
+            using type = typename is_void<To>::type;
+        };
 
-    template <typename From, typename To>
-    struct is_convertible_helper<From, To, false>
-    {
-        template <typename To1>
-        static void test_aux(To1);
+        template <typename From, typename To>
+        struct is_convertible_h<From, To, false>
+        {
+            template <typename To1>
+            static void test_aux(To1);
 
-        template <typename From1, typename To1,
-            typename = decltype(test_aux<To1>(declval<From1>()))>
-        static true_type test(int);
+            template <typename From1, typename To1,
+                typename = decltype(test_aux<To1>(declval<From1>()))>
+            static true_type test(int);
 
-        template <typename, typename>
-        static false_type
-        test(...);
+            template <typename, typename>
+            static false_type
+            test(...);
 
-        using type = decltype(test<From, To>(0));
-    };
+            using type = decltype(test<From, To>(0));
+        };
+    } // namespace internal
 
     template <typename From, typename To>
     struct is_convertible
-        : is_convertible_helper<From, To>::type {};
+        : internal::is_convertible_h<From, To>::type {};
 
     /// Is trivially copyable
     template <typename T>
@@ -827,31 +870,31 @@ namespace std {
 
     /// Is signed
     template <typename T, bool = is_arithmetic<T>::value>
-    struct is_signed_helper
+    struct is_signed_h
         : false_type {};
 
     template <typename T>
-    struct is_signed_helper<T, true>
+    struct is_signed_h<T, true>
         : integral_constant<bool, T(-1) < T(0)> {};
 
     template <typename T>
     struct is_signed
-        : is_signed_helper<T>::type {};
+        : is_signed_h<T>::type {};
 
     /// Decay
     template <typename T>
     struct decay {
         using U = remove_reference_t<T>;
 
-        using type = typename conditional<
+        using type = conditional_t<
             is_array<U>::value,
             remove_extent_t<U> *,
-            typename conditional<
+            conditional_t<
                 is_function<U>::value,
                 add_pointer_t<U>,
                 remove_cv_t<U>
-            >::type
-        >::type;
+            >
+        >;
     };
 
     template <typename T>
@@ -863,40 +906,42 @@ namespace std {
         : and_pred<is_arithmetic<T>, not_pred<is_signed<T>>>::type {};
 
     /// Is destructible
-    struct do_is_destructible_internal {
-        template <typename T, typename = decltype(declval<T&>().~T())>
-        static true_type test(int);
+    namespace internal {
+        struct do_is_destructible_h {
+            template <typename T, typename = decltype(declval<T&>().~T())>
+            static true_type test(int);
 
-        template <typename>
-        static false_type test(...);
-    };
+            template <typename>
+            static false_type test(...);
+        };
 
-    template <typename T>
-    struct is_destructible_internal
-        : do_is_destructible_internal {
-        using type = decltype(test<T>(0));
-    };
+        template <typename T>
+        struct is_destructible_h
+            : do_is_destructible_h {
+            using type = decltype(test<T>(0));
+        };
 
-    template <typename T, bool = or_pred<is_void<T>,
-        is_array_unknown_bounds<T>, is_function<T>>::value,
-        bool = or_pred<is_reference<T>, is_scalar<T>>::value>
-    struct is_destructible_safe;
+        template <typename T, bool = or_pred<is_void<T>,
+            is_array_unknown_bounds<T>, is_function<T>>::value,
+            bool = or_pred<is_reference<T>, is_scalar<T>>::value>
+        struct is_destructible_safe;
 
-    template <typename T>
-    struct is_destructible_safe<T, false, false>
-        : is_destructible_internal<remove_all_extents_t<T>>::type {};
+        template <typename T>
+        struct is_destructible_safe<T, false, false>
+            : is_destructible_h<remove_all_extents_t<T>>::type {};
 
-    template <typename T>
-    struct is_destructible_safe<T, true, false>
-        : false_type {};
+        template <typename T>
+        struct is_destructible_safe<T, true, false>
+            : false_type {};
 
-    template <typename T>
-    struct is_destructible_safe<T, false, true>
-        : true_type {};
+        template <typename T>
+        struct is_destructible_safe<T, false, true>
+            : true_type {};
+    }
 
     template <typename T>
     struct is_destructible
-        : is_destructible_safe<T>::type {};
+        : internal::is_destructible_safe<T>::type {};
 
     /// Has trivial destructor
     template <typename T>
@@ -910,85 +955,92 @@ namespace std {
             has_trivial_destructor<T>> {};
 
     /// Is nothrow destructible
-    struct do_is_nothrow_destructible_internal {
+    namespace internal {
+        struct do_is_nothrow_destructible_h {
+            template <typename T>
+            static integral_constant<bool, noexcept(declval<T &>().~T())> test(int);
+
+            template <typename>
+            static false_type test(...);
+        };
+
         template <typename T>
-        static integral_constant<bool, noexcept(declval<T &>().~T())> test(int);
+        struct is_nothrow_destructible_h
+            : do_is_nothrow_destructible_h {
+            using type = decltype(test<T>(0));
+        };
 
-        template <typename>
-        static false_type test(...);
-    };
+        template <typename T,
+            bool = or_pred<is_void<T>, is_array_unknown_bounds<T>, is_function<T>>::value,
+            bool = or_pred<is_reference<T>, is_scalar<T>>::value>
+        struct is_nothrow_destructible_safe;
 
-    template <typename T>
-    struct is_nothrow_destructible_internal
-        : do_is_nothrow_destructible_internal {
-        using type = decltype(test<T>(0));
-    };
+        template <typename T>
+        struct is_nothrow_destructible_safe<T, false, false>
+            : is_nothrow_destructible_h<typename
+                remove_all_extents<T>::type>::type {};
 
-    template <typename T,
-        bool = or_pred<is_void<T>, is_array_unknown_bounds<T>, is_function<T>>::value,
-        bool = or_pred<is_reference<T>, is_scalar<T>>::value>
-    struct is_nothrow_destructible_safe;
+        template <typename T>
+        struct is_nothrow_destructible_safe<T, true, false>
+            : false_type {};
 
-    template <typename T>
-    struct is_nothrow_destructible_safe<T, false, false>
-        : is_nothrow_destructible_internal<typename
-               remove_all_extents<T>::type>::type {};
-
-  template <typename T>
-    struct is_nothrow_destructible_safe<T, true, false>
-        : false_type {};
-
-  template <typename T>
-    struct is_nothrow_destructible_safe<T, false, true>
-        : true_type { };
+        template <typename T>
+        struct is_nothrow_destructible_safe<T, false, true>
+            : true_type { };
+    }
 
     template <typename T>
     struct is_nothrow_destructible
-        : is_nothrow_destructible_safe<T>::type {};
+        : internal::is_nothrow_destructible_safe<T>::type {};
 
     /// Is clean constructible
-    struct do_clean_constructible_internal {
-        template <typename T, typename ...Args, typename = decltype(T(declval<Args>()...))>
-            static true_type test(int);
+    namespace internal {
+        struct do_clean_constructible_h {
+            template <typename T, typename ...Args, typename = decltype(T(declval<Args>()...))>
+                static true_type test(int);
 
-        template <typename, typename...>
-            static false_type test(...);
-    };
+            template <typename, typename...>
+                static false_type test(...);
+        };
 
-    template <typename T, typename ...Args>
-    struct is_clean_constructible_internal
-        : do_clean_constructible_internal {
-        using type = decltype(test<T, Args...>(0));
-    };
+        template <typename T, typename ...Args>
+        struct is_clean_constructible_h
+            : do_clean_constructible_h {
+            using type = decltype(test<T, Args...>(0));
+        };
+    } // namespace internal
 
     template <typename T, typename ...Args>
     struct is_clean_constructible
-        : is_clean_constructible_internal<T, Args...>::type {};
+        : internal::is_clean_constructible_h<T, Args...>::type {};
 
     /// Is static castable
-    struct do_is_static_castable_internal {
-        template <typename From, typename To, typename = decltype(static_cast<To>(declval<From>()))>
-            static true_type test(int);
+    namespace internal {
+        struct do_is_static_castable_h {
+            template <typename From, typename To, typename = 
+                decltype(static_cast<To>(declval<From>()))>
+                static true_type test(int);
 
-        template <typename, typename>
-            static false_type test(...);
-    };
+            template <typename, typename>
+                static false_type test(...);
+        };
 
-    template <typename From, typename To>
-    struct is_static_castable_internal
-        : do_is_static_castable_internal {
-      using type = decltype(test<From, To>(0));
-    };
+        template <typename From, typename To>
+        struct is_static_castable_h
+            : do_is_static_castable_h {
+        using type = decltype(test<From, To>(0));
+        };
 
-    template <typename From, typename To>
-    struct is_static_castable_safe
-        : is_static_castable_internal<From, To>::type {};
+        template <typename From, typename To>
+        struct is_static_castable_safe
+            : is_static_castable_h<From, To>::type {};
+    } // namespace internal
 
 
     template <typename From, typename To>
     struct is_static_castable
         : integral_constant<bool, (
-            is_static_castable_safe<From, To>::value)> {};
+            internal::is_static_castable_safe<From, To>::value)> {};
 
     /// Is base to derived reference
     template <typename From, typename To, bool = not_pred<or_pred<is_void<From>, 
@@ -1027,94 +1079,95 @@ namespace std {
     struct is_lvalue_to_rvalue_ref<From, To, false>
         : false_type {};
 
-    /// Is direct constructible reference cast
-    template <typename T, typename Arg>
-    struct is_direct_constructible_ref_cast
-        : and_pred<is_static_castable<Arg, T>,
-            not_pred<or_pred<is_base_to_derived_ref<Arg, T>,
-                                is_lvalue_to_rvalue_ref<Arg, T>
-          >>>::type {};
-
-    /// Is direct constructible new safe
-    struct do_is_direct_constructible_internal {
-        template <typename T, typename Arg, typename = decltype(::new T(declval<Arg>()))>
-            static true_type test(int);
-
-        template <typename, typename>
-            static false_type test(...);
-    };
-
-    template <typename T, typename Arg>
-    struct is_direct_constructible_internal
-        : do_is_direct_constructible_internal {
-        using type = decltype(test<T, Arg>(0));
-    };
-
-    template <typename T, typename Arg>
-    struct is_direct_constructible_new_safe
-        : and_pred<is_destructible<T>,
-            is_direct_constructible_internal<T, Arg>>::type {};
-
     /// Is direct constructible
+    namespace internal {
+        template <typename T, typename Arg>
+        struct is_direct_constructible_ref_cast
+            : and_pred<is_static_castable<Arg, T>,
+                not_pred<or_pred<is_base_to_derived_ref<Arg, T>,
+                                    is_lvalue_to_rvalue_ref<Arg, T>
+            >>>::type {};
+
+        struct do_is_direct_constructible_h {
+            template <typename T, typename Arg, typename = decltype(::new T(declval<Arg>()))>
+                static true_type test(int);
+
+            template <typename, typename>
+                static false_type test(...);
+        };
+
+        template <typename T, typename Arg>
+        struct is_direct_constructible_h
+            : do_is_direct_constructible_h {
+            using type = decltype(test<T, Arg>(0));
+        };
+
+        template <typename T, typename Arg>
+        struct is_direct_constructible_new_safe
+            : and_pred<is_destructible<T>,
+                is_direct_constructible_h<T, Arg>>::type {};
+    }
+
     template <typename T, typename Arg>
     struct is_direct_constructible
-        : conditional<is_reference<T>::value,
-            is_direct_constructible_ref_cast<T, Arg>,
-            is_direct_constructible_new_safe<T, Arg>>::type {};
+        : conditional_t<is_reference<T>::value,
+            internal::is_direct_constructible_ref_cast<T, Arg>,
+            internal::is_direct_constructible_new_safe<T, Arg>> {};
 
-    /// Is default constructible safe
-    struct do_is_default_constructible_internal {
-        template <typename T, typename = decltype(T())>
-        static true_type test(int);
+    /// Is default constructible
+    namespace internal {
+        struct do_is_default_constructible_h {
+            template <typename T, typename = decltype(T())>
+            static true_type test(int);
 
-        template <typename>
-        static false_type test(...);
-    };
+            template <typename>
+            static false_type test(...);
+        };
 
-    template <typename T>
-    struct is_default_constructible_internal
-        : do_is_default_constructible_internal {
-        using type = decltype(test<T>(0));
-    };
+        template <typename T>
+        struct is_default_constructible_h
+            : do_is_default_constructible_h {
+            using type = decltype(test<T>(0));
+        };
 
-    template <typename T>
-    struct is_default_constructible_atom
-        : and_pred<not_pred<is_void<T>>,
-            is_default_constructible_internal<T>>::type {};
+        template <typename T>
+        struct is_default_constructible_atom
+            : and_pred<not_pred<is_void<T>>,
+                is_default_constructible_h<T>>::type {};
 
-    template <typename T, bool = is_array<T>::value>
-    struct is_default_constructible_safe;
+        template <typename T, bool = is_array<T>::value>
+        struct is_default_constructible_safe;
 
-    template <typename T>
-    struct is_default_constructible_safe<T, true>
-        : and_pred<is_array_known_bounds<T>,
-            is_default_constructible_atom<typename remove_all_extents<T>::type>>::type {};
+        template <typename T>
+        struct is_default_constructible_safe<T, true>
+            : and_pred<is_array_known_bounds<T>,
+                is_default_constructible_atom<typename remove_all_extents<T>::type>>::type {};
 
-    template <typename T>
-    struct is_default_constructible_safe<T, false>
-        : is_default_constructible_atom<T>::type {};
+        template <typename T>
+        struct is_default_constructible_safe<T, false>
+            : is_default_constructible_atom<T>::type {};
+    }
 
-    /// is_default_constructible
     template <typename T>
     struct is_default_constructible
-        : is_default_constructible_safe<T>::type {};
+        : internal::is_default_constructible_safe<T>::type {};
 
     /// Is constructible
     template <typename T, typename ...Args>
-    struct is_constructible_internal
+    struct is_constructible_h
         : is_clean_constructible<T, Args...> {};
 
     template <typename T, typename Arg>
-    struct is_constructible_internal<T, Arg>
+    struct is_constructible_h<T, Arg>
         : is_direct_constructible<T, Arg> {};
 
     template <typename T>
-    struct is_constructible_internal<T>
+    struct is_constructible_h<T>
         : is_default_constructible<T> {};
 
     template <typename T, typename ...Args>
     struct is_constructible
-        : is_constructible_internal<T, Args...>::type {};
+        : is_constructible_h<T, Args...>::type {};
 
     /// Is trivially constructible
     template <typename T, typename ...Args>
@@ -1134,45 +1187,49 @@ namespace std {
             is_trivially_default_constructible<T>>::type {};
 
     /// Is nothrow default constructible
+    namespace internal {
     template <typename T>
-    struct is_nothrow_default_constructible_atom
-        : integral_constant<bool, noexcept(T())> {};
+        struct is_nothrow_default_constructible_atom
+            : integral_constant<bool, noexcept(T())> {};
 
-    template <typename T, bool = is_array<T>::value>
-    struct is_nothrow_default_constructible_internal;
+        template <typename T, bool = is_array<T>::value>
+        struct is_nothrow_default_constructible_h;
 
-    template <typename T>
-    struct is_nothrow_default_constructible_internal<T, true>
-        : and_pred<is_array_known_bounds<T>,
-        is_nothrow_default_constructible_atom<typename
-            remove_all_extents<T>::type>>::type {};
+        template <typename T>
+        struct is_nothrow_default_constructible_h<T, true>
+            : and_pred<is_array_known_bounds<T>,
+            is_nothrow_default_constructible_atom<typename
+                remove_all_extents<T>::type>>::type {};
 
-    template <typename T>
-    struct is_nothrow_default_constructible_internal<T, false>
-        : is_nothrow_default_constructible_atom<T> {};
+        template <typename T>
+        struct is_nothrow_default_constructible_h<T, false>
+            : is_nothrow_default_constructible_atom<T> {};
+    }
 
     template <typename T>
     struct is_nothrow_default_constructible
         : and_pred<is_default_constructible<T>,
-            is_nothrow_default_constructible_internal<T>>::type {};
+            internal::is_nothrow_default_constructible_h<T>>::type {};
 
     /// Is nothrow constructible
-    template <typename T, typename ...Args>
-    struct is_nothrow_constructible_internal
-        : integral_constant<bool, noexcept(T(declval<Args>()...))> {};
+    namespace internal {
+        template <typename T, typename ...Args>
+        struct is_nothrow_consturctible
+            : integral_constant<bool, noexcept(T(declval<Args>()...))> {};
 
-    template <typename T, typename Arg>
-    struct is_nothrow_constructible_internal<T, Arg>
-        : integral_constant<bool, noexcept(static_cast<T>(declval<Arg>()))> {};
+        template <typename T, typename Arg>
+        struct is_nothrow_consturctible<T, Arg>
+            : integral_constant<bool, noexcept(static_cast<T>(declval<Arg>()))> {};
 
-    template <typename T>
-    struct is_nothrow_constructible_internal<T>
-        : is_nothrow_default_constructible<T> {};
+        template <typename T>
+        struct is_nothrow_consturctible<T>
+            : is_nothrow_default_constructible<T> {};
+    } // namespace internal
 
     template <typename T, typename ...Args>
     struct is_nothrow_constructible
         : and_pred<is_constructible<T, Args...>,
-            is_nothrow_constructible_internal<T, Args...>>::type {};
+            internal::is_nothrow_consturctible<T, Args...>>::type {};
 
     /// Is move constructible
     template <typename T>
@@ -1190,20 +1247,23 @@ namespace std {
         : is_nothrow_constructible<T, add_rvalue_reference_t<T>> {};
 
     /// Is assignable
-    template <typename T, typename U>
-    struct is_assignable_internal {
-        template <typename T1, typename U1, typename = decltype(declval<T1>() = declval<U1>())>
-        static true_type test(int);
+    namespace internal {
+        template <typename T, typename U>
+        struct is_assignable_h {
+            template <typename T1, typename U1, typename =
+                decltype(declval<T1>() = declval<U1>())>
+            static true_type test(int);
 
-        template <typename, typename>
-        static false_type test(...);
+            template <typename, typename>
+            static false_type test(...);
 
-        using type = decltype(test<T, U>(0));
-    };
+            using type = decltype(test<T, U>(0));
+        };
+    } // namespace internal
 
     template <typename T, typename U>
     struct is_assignable
-        : is_assignable_internal<T, U>::type {};
+        : internal::is_assignable_h<T, U>::type {};
 
     /// Is trivially assignable
     template <typename T, typename U>
@@ -1212,13 +1272,15 @@ namespace std {
             integral_constant<bool, __is_trivially_assignable(T, U)>> {};
 
     /// Is nothrow assignable
-    template <typename T, typename U>
-    struct is_nothrow_assignable_internal
-        : integral_constant<bool, noexcept(declval<T>() = declval<U>())> {};
+    namespace internal {
+        template <typename T, typename U>
+        struct is_nothrow_assignable
+            : integral_constant<bool, noexcept(declval<T>() = declval<U>())> {};
+    } // namespace internal
 
     template <typename T, typename U>
     struct is_nothrow_assignable
-        : and_pred<is_assignable<T, U>, is_nothrow_assignable_internal<T, U>> {};
+        : and_pred<is_assignable<T, U>, internal::is_nothrow_assignable<T, U>> {};
 
     /// Is copy assignable
     template <typename T>
@@ -1256,10 +1318,259 @@ namespace std {
         : is_nothrow_assignable<add_lvalue_reference_t<T>,
             add_rvalue_reference_t<const T>> {};
 
+    /// Has virtual destructor
+    template <typename T>
+    struct has_virtual_destructor
+        : integral_constant<bool, __has_virtual_destructor(T)> {};
+
     /// Alignment of
     template <typename T>
     struct alignment_of
         : integral_constant<size_t, alignof(T)> {};
+
+    namespace internal {
+        template <typename Unqualified, bool IsConst, bool IsVol>
+        struct cv_selector;
+
+        template <typename Unqualified>
+        struct cv_selector<Unqualified, false, false> {
+            using type = Unqualified;
+        };
+
+        template <typename Unqualified>
+        struct cv_selector<Unqualified, false, true> {
+            using type = volatile Unqualified;
+        };
+
+        template <typename Unqualified>
+        struct cv_selector<Unqualified, true, false> {
+            using type = const Unqualified;
+        };
+
+        template <typename Unqualified>
+        struct cv_selector<Unqualified, true, true> {
+            using type = const volatile Unqualified;
+        };
+
+        template <typename Qualified, typename Unqualified,
+            bool IsConst = is_const<Qualified>::value,
+            bool IsVol = is_volatile<Qualified>::value>
+        struct match_cv_qualifiers {
+            using type = typename cv_selector<Unqualified, IsConst, IsVol>::type;
+        };
+    } // namespace internal
+
+    /// Make unsigned
+    namespace internal {
+        template <typename T>
+        struct make_unsigned_for_numbers {
+            using type = T;
+        };
+
+        template <>
+        struct make_unsigned_for_numbers<char> {
+            using type = unsigned char;
+        };
+
+        template <>
+        struct make_unsigned_for_numbers<signed char> {
+            using type = unsigned char;
+        };
+
+        template <>
+        struct make_unsigned_for_numbers<short> {
+            using type = unsigned short;
+        };
+
+        template <>
+        struct make_unsigned_for_numbers<int> {
+            using type = unsigned int;
+        };
+
+        template <>
+        struct make_unsigned_for_numbers<long> {
+            using type = unsigned long;
+        };
+
+        template <>
+        struct make_unsigned_for_numbers<long long> {
+            using type = unsigned long long;
+        };
+
+        template <typename T, 
+            bool IsInt = is_integral<T>::value,
+            bool IsEnum = is_enum<T>::value>
+        struct make_unsigned_h;
+
+        template <typename T>
+        struct make_unsigned_h<T, true, false> {
+            using usigned_type =
+                typename make_unsigned_for_numbers<typename remove_cv<T>::type>::type;
+            using cv_unsigned = match_cv_qualifiers<T, usigned_type>;
+
+            using type = typename cv_unsigned::type;
+        };
+
+        template <typename T>
+        struct make_unsigned_h<T, false, true> {
+            using smallest = unsigned char;
+            static constexpr bool b0 = sizeof(T) <= sizeof(smallest);
+            static constexpr bool b1 = sizeof(T) <= sizeof(unsigned short);
+            static constexpr bool b2 = sizeof(T) <= sizeof(unsigned int);
+            using cond2 = conditional_t<b2, unsigned int, unsigned long>;
+            using cond1 = conditional_t<b1, unsigned short, cond2>;
+
+            using type = conditional_t<b0, smallest, cond1>;
+        };
+    } // namespace internal
+
+    template <typename T>
+    struct make_unsigned { 
+        using type = typename internal::make_unsigned_h<T>::type;
+    };
+
+    template <>
+    struct make_unsigned<bool>;
+    
+    template <typename T>
+    using make_unsigned_t = typename make_unsigned<T>::type;
+
+    /// Make signed
+    namespace internal {
+        template <typename T>
+        struct make_signed_for_numbers {
+            using type = T;
+        };
+
+        template <>
+        struct make_signed_for_numbers<char> { 
+            using type = signed char;
+        };
+
+        template <>
+        struct make_signed_for_numbers<unsigned char> {
+            using type = signed char;
+        };
+
+        template <>
+        struct make_signed_for_numbers<unsigned short> {
+            using type = signed short;
+        };
+
+        template <>
+        struct make_signed_for_numbers<unsigned int> {
+            using type = signed int;
+        };
+
+        template <>
+        struct make_signed_for_numbers<unsigned long> {
+            using type = signed long;
+        };
+
+        template <>
+        struct make_signed_for_numbers<unsigned long long> {
+            using type = signed long long;
+        };
+
+        template <typename T, bool IsInt = is_integral<T>::value, bool IsEnum = is_enum<T>::value>
+        struct make_signed_h;
+
+        template <typename T>
+        struct make_signed_h<T, true, false> {
+            using signed_type =
+                typename make_signed_for_numbers<typename remove_cv<T>::type>::type;
+            using cv_signed = match_cv_qualifiers<T, signed_type>;
+
+            using type = typename cv_signed::type;
+        };
+
+        template <typename T>
+        struct make_signed_h<T, false, true> {
+            using smallest = signed char;
+            static constexpr bool b0 = sizeof(T) <= sizeof(smallest);
+            static constexpr bool b1 = sizeof(T) <= sizeof(signed short);
+            static constexpr bool b2 = sizeof(T) <= sizeof(signed int);
+            using cond2 = conditional_t<b2, signed int, signed long>;
+            using cond1 = conditional_t<b1, signed short, cond2>;
+
+            using type = conditional_t<b0, smallest, cond1>;
+        };
+    } // namespace internal
+
+    template <typename T>
+    struct make_signed {
+        using type = typename internal::make_signed_h<T>::type;
+    };
+
+    template <>
+    struct make_signed<bool>;
+
+    template <typename T>
+    using make_signed_t = typename make_signed<T>::type;
+
+    /// Void type
+    template <typename ...>
+    using void_t = void;
+
+    /// Common type
+    template <typename ...Ts>
+    struct common_type {};
+
+    template <typename ...Ts>
+    using common_type_t = typename common_type<Ts...>::type;
+
+    template <typename T>
+    struct common_type<T> {
+        using type = decay_t<T>;
+    };
+
+    namespace internal {
+        template <typename T1, typename T2>
+        using cond_t = decltype(false ? declval<T1>() : declval<T2>());
+
+        template <typename T1, typename T2, typename = void>
+        struct common_type_2_default {};
+
+        template <typename T1, typename T2>
+        struct common_type_2_default<T1, T2, void_t<cond_t<T1, T2>>> {
+            using type = decay_t<cond_t<T1, T2>>;
+        };
+
+        template <typename T1, typename T2,
+            typename D1 = decay_t<T1>, typename D2 = decay_t<T2>>
+        struct common_type_2
+            : common_type<D1, D2> {};
+
+        template <typename D1, typename D2>
+        struct common_type_2<D1, D2, D1, D2>
+            : common_type_2_default<D1, D2> {};
+    } // namespace internal
+
+    template <typename T1, typename T2>
+    struct common_type<T1, T2> : internal::common_type_2<T1, T2> {};
+    
+    namespace internal {
+        template <typename Always_void,
+            typename T1, typename T2, typename ...R>
+        struct common_type_multi {};
+
+        template <typename T1, typename T2, typename ...R>
+        struct common_type_multi<void_t<common_type_t<T1, T2>>, T1, T2, R...>
+            : common_type<common_type_t<T1, T2>, R...> {};
+    } // namespace internal
+
+    template <typename T1, typename T2, typename ...R>
+    struct common_type<T1, T2, R...>
+        : internal::common_type_multi<void, T1, T2, R...> {};
+
+    /// The underlying type of an enum
+    template <typename T>
+    struct underlying_type {
+        using type = __underlying_type(T);
+    };
+
+    template <typename T>
+    using underlying_type_t = typename underlying_type<T>::type;
 } // namespace std
 
 #endif // LP_CC_LIB_TYPE_TRAITS_HH
