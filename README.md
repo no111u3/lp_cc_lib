@@ -6,6 +6,7 @@ It consist:
    - C++14 std type traits (almost implementation of features)
    - C++14 std types - support generic types
    - C++14 initializer list
+   - C++14 algorithm (max and max_element only)
  - lepestrum bit manipulation types and helpers
    - C++14 Lepestrum type list with type list operations
    - C++14 bit, bit operations and bit operation traits
