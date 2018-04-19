@@ -18,6 +18,8 @@
  * @author Boris Vinogradov
  */
 
+#include <internal/std_types.hh>
+
 #ifndef LP_CC_LIB_TYPES_HH
 #define LP_CC_LIB_TYPES_HH
 
@@ -34,8 +36,8 @@ namespace lp {
     using i64_t = long long;
 
     // unsigned and signed machine word
-    using word_t = unsigned long;
-    using iword_t = long;
+    using word_t = std::size_t;
+    using iword_t = signed std::size_t;
 
     // address types
     using addr_t = word_t;
