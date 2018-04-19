@@ -18,14 +18,17 @@
  * @author Boris Vinogradov
  */
 
-#include <types.hh>
-
 #ifndef LP_CC_LIB_STD_TYPES_HH
 #define LP_CC_LIB_STD_TYPES_HH
 
 namespace std {
-    using size_t = lp::word_t;
-    using ptrdiff_t = lp::iword_t;
+    using size_t = decltype(sizeof(int));
+    namespace internal {
+        struct h {
+            static constexpr const size_t *x = nullptr;
+        };
+    } // namespace internal
+    using ptrdiff_t = decltype(internal::h::x - internal::h::x);
 
     using nullptr_t = decltype(nullptr);
 } // namespace std
