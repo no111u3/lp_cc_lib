@@ -19,6 +19,7 @@
  */
 
 #include <internal/std_types.hh>
+#include <type_traits.hh>
 
 #ifndef LP_CC_LIB_TYPES_HH
 #define LP_CC_LIB_TYPES_HH
@@ -37,7 +38,7 @@ namespace lp {
 
     // unsigned and signed machine word
     using word_t = std::size_t;
-    using iword_t = signed std::size_t;
+    using iword_t = std::make_signed_t<std::size_t>;
 
     // address types
     using addr_t = word_t;
