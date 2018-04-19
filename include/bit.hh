@@ -33,26 +33,28 @@ namespace lp {
     /// Impementation of bit for single bits
     template <word_t Position>
     struct bit<Position> : operations<bit<Position>> {
-        static_assert(Position < sizeof(u64_t) * 8, "Can't create overflow bit");
-        static constexpr word_t position = Position;
+        static constexpr const word_t position = Position;
 
         template<typename T>
         struct mask {
-            static constexpr T value = 1 << position;
+            static_assert(Position < sizeof(T) * 8, "Can't create overflow bit");
+
+            static constexpr const T value = 1 << position;
         };
     };
 
     /// Impementation of bit for multiple bits
     template <word_t Position, word_t Width>
     struct bit<Position, Width> : operations<bit<Position, Width>> {
-        static_assert(Position + Width < sizeof(u64_t) * 8, "Can't create overflow bit");
-        static constexpr word_t position = Position;
-        static constexpr word_t width = Width;
-        static constexpr word_t default_value = (1 << width) - 1;
+        static constexpr const word_t position = Position;
+        static constexpr const word_t width = Width;
+        static constexpr const word_t default_value = (1 << width) - 1;
 
         template <typename T, T Current_value = default_value>
         struct mask {
-            static constexpr T value =
+            static_assert(Position + Width < sizeof(T) * 8, "Can't create overflow bit");
+
+            static constexpr T const value =
                 (Current_value & default_value) << position;
         };
 
@@ -66,13 +68,13 @@ namespace lp {
     /// Impementation of bit for full field length
     template <>
     struct bit<0, 32> : operations<bit<0, 32>> {
-        static constexpr word_t position = 0;
-        static constexpr word_t width = 32;
-        static constexpr unsigned default_value = 0xffff'ffff;
+        static constexpr const word_t position = 0;
+        static constexpr const word_t width = 32;
+        static constexpr const word_t default_value = 0xffff'ffff;
 
         template <typename T, T Current_value = default_value>
         struct mask {
-            static constexpr T value = Current_value;
+            static constexpr const T value = Current_value;
         };
 
         template<word_t Current_value>
