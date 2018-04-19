@@ -653,7 +653,7 @@ namespace std {
         struct add_pointer_h {
             using type = remove_reference_t<T> *;
         };
-        
+
         template <typename T>
         struct add_pointer_h<T, true> {
             using type = T;
@@ -669,7 +669,7 @@ namespace std {
             using type = T(*)(Args..., ...);
         };
     } // namespace internal
-    
+
     template <typename T>
     struct add_pointer
         : internal::add_pointer_h<T, is_function<T>::value> {};
@@ -706,7 +706,7 @@ namespace std {
 
     template <size_t Len, typename ...Types>
     using aligned_union_t = typename aligned_union<Len, Types...>::type;
-    
+
     /// Extent
     template <typename, unsigned = 0>
     struct extent;
@@ -1431,7 +1431,7 @@ namespace std {
 
     template <>
     struct make_unsigned<bool>;
-    
+
     template <typename T>
     using make_unsigned_t = typename make_unsigned<T>::type;
 
