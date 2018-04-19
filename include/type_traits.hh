@@ -473,7 +473,7 @@ namespace std {
         struct is_member_pointer_h<T U::*>
             : true_type {};
     } // namespace internal
-            
+
     template <typename T>
     struct is_member_pointer
         : internal::is_member_pointer_h<remove_cv_t<T>> {};
@@ -1548,7 +1548,7 @@ namespace std {
 
     template <typename T1, typename T2>
     struct common_type<T1, T2> : internal::common_type_2<T1, T2> {};
-    
+
     namespace internal {
         template <typename Always_void,
             typename T1, typename T2, typename ...R>
