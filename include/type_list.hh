@@ -79,11 +79,11 @@ namespace lp {
     /// Find item selected by predicate
     template <template <typename> class Predicate, typename List>
     struct find {
-        using type = typename std::conditional<
+        using type = std::conditional_t<
             Predicate<typename List::head>::value,
             typename List::head,
             typename find<Predicate, typename List::tail>::type
-        >::type;
+        >;
     };
 
     template <template <typename> class Predicate>
@@ -102,20 +102,20 @@ namespace lp {
 
     template <template <typename> class Predicate, typename List, typename Type, typename ...Types>
     struct conditional_append<Predicate, List, Type, Types...> {
-        using type = typename std::conditional<
+        using type = std::conditional_t<
             Predicate<Type>::value,
             typename conditional_append<
                 Predicate, typename List::template append<Type>, Types...>::type,
             typename conditional_append<Predicate, List, Types...>::type
-        >::type;
+        >;
     };
 
     /// Remove matched from types and pack to type_list
     template <template <typename> class Predicate, typename ...Types>
     struct remove {
         template <typename T>
-        struct negate_predicate : public std::conditional<
-            Predicate<T>::value, std::false_type, std::true_type>::type {
+        struct negate_predicate : public std::conditional_t<
+            Predicate<T>::value, std::false_type, std::true_type> {
         };
 
         using type = typename conditional_append<negate_predicate, type_list<>, Types...>::type;
@@ -172,7 +172,7 @@ namespace lp {
 
         using reverse = typename reverse_insert<type_list<>, Types...>::type;
 
-        static constexpr word_t size = sizeof...(Types);
+        static constexpr const word_t size = sizeof...(Types);
     };
 }
 
