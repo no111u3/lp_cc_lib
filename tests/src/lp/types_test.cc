@@ -37,5 +37,6 @@ void types_test() {
     word_t *a;
     using pointer_type = decltype(a);
     static_assert(sizeof(pointer_type) == sizeof(addr_t), "");
-    static_assert(std::is_same<std::remove_pointer_t<pointer_type>, addr_t>::value, "");
+    static_assert(std::is_same<
+        std::remove_pointer_t<pointer_type>, addr_t>::value, "");
 }

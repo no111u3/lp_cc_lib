@@ -14,7 +14,7 @@
  *
  * Lepestrum C++ Library implementation
  * Type list test
- * @file type_list_test.cc
+ * @file lp/type_list_test.cc
  * @author Boris Vinogradov
  */
 
@@ -120,7 +120,8 @@ void type_list_test() {
 
     // Remove exist type
     static_assert(std::is_same<
-        int_types::remove<is_same_int>, type_list<char, short, long>>::value, "");
+        int_types::remove<is_same_int>,
+        type_list<char, short, long>>::value, "");
 
     // Remove non-exist type
     static_assert(std::is_same<
