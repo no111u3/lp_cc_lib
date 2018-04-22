@@ -14,23 +14,28 @@
  *
  * Lepestrum C++ Library implementation
  * C++ library types
- * @file std_types.hh
+ * @file internal/std_types.hh
  * @author Boris Vinogradov
  */
 
-#ifndef LP_CC_LIB_STD_TYPES_HH
-#define LP_CC_LIB_STD_TYPES_HH
+#ifndef LP_CC_LIB_INTERNAL_STD_TYPES_HH
+#define LP_CC_LIB_INTERNAL_STD_TYPES_HH
 
 namespace std {
+    /// Platform size type
     using size_t = decltype(sizeof(int));
+
     namespace internal {
         struct h {
             static constexpr const size_t *x = nullptr;
         };
     } // namespace internal
+
+    /// Platform pointer difference type
     using ptrdiff_t = decltype(internal::h::x - internal::h::x);
 
+    /// Platform null pointer type
     using nullptr_t = decltype(nullptr);
 } // namespace std
 
-#endif // LP_CC_LIB_STD_TYPES_HH
+#endif // LP_CC_LIB_INTERNAL_STD_TYPES_HH
