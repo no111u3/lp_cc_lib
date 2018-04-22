@@ -14,11 +14,13 @@
  *
  * Lepestrum C++ Library implementation
  * Types test
- * @file types_test.cc
+ * @file lp/types_test.cc
  * @author Boris Vinogradov
  */
 
-#include <types.hh>
+#include <type_traits.hh>
+
+#include <lp/types.hh>
 
 void types_test() {
     using namespace lp;
@@ -29,8 +31,11 @@ void types_test() {
     static_assert(sizeof(long) == 4 || sizeof(long) == 8, "");
     static_assert(sizeof(long long) == 8, "");
 
-    static_assert(sizeof(word_t) == sizeof(long), "");
-    void *a;
+    auto x = sizeof(int[4]);
+    static_assert(sizeof(word_t) == sizeof(x), "");
+    static_assert(std::is_same<word_t, decltype(x)>::value, "");
+    word_t *a;
     using pointer_type = decltype(a);
     static_assert(sizeof(pointer_type) == sizeof(addr_t), "");
+    static_assert(std::is_same<std::remove_pointer_t<pointer_type>, addr_t>::value, "");
 }
