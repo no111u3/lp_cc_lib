@@ -14,7 +14,7 @@
  *
  * Lepestrum C++ Library implementation
  * Type list reperpesentation layer
- * @file type_list.hh
+ * @file lp/type_list.hh
  * @author Boris Vinogradov
  */
 
