@@ -34,6 +34,7 @@ namespace lp {
     struct bit_field<Position> {
         static constexpr const word_t position = Position;
         static constexpr const word_t width = 1;
+        static constexpr const word_t default_value = 1;
 
         template<typename T>
         struct mask_value {
@@ -43,6 +44,22 @@ namespace lp {
             static constexpr const T mask = 1 << position;
             static constexpr const T value = 1 << position;
         };
+
+        constexpr bit_field() noexcept = default;
+        constexpr explicit bit_field(word_t from_value) noexcept
+        : value_{from_value} {}
+
+        template <typename T>
+        constexpr const T set(const T input_value) const noexcept {
+            return input_value | value_ << position;
+        }
+
+        template <typename Ret, typename T>
+        constexpr const Ret get(T input_value) const noexcept {
+            return (input_value & mask_value<T>::mask) >> position;
+        }
+
+        const word_t value_ = default_value;
     };
 
     /// Impementation of bit field for multiple bits
@@ -63,6 +80,22 @@ namespace lp {
             static constexpr T const value =
                 (Current_value & default_value) << position;
         };
+
+        constexpr bit_field() noexcept = default;
+        constexpr explicit bit_field(word_t from_value) noexcept
+        : value_{from_value} {}
+
+        template <typename T>
+        constexpr const T set(const T input_value) const noexcept {
+            return (input_value & ~mask_value<T>::mask) | value_ << position;
+        }
+
+        template <typename Ret, typename T>
+        constexpr const Ret get(T input_value) const noexcept {
+            return (input_value & mask_value<T>::mask) >> position;
+        }
+
+        const word_t value_ = default_value;
 
         template<word_t Current_value>
         struct with_value {
@@ -85,6 +118,22 @@ namespace lp {
             static constexpr const T mask = default_value;
             static constexpr const T value = Current_value;
         };
+
+        constexpr bit_field() noexcept = default;
+        constexpr explicit bit_field(word_t from_value) noexcept
+        : value_{from_value} {}
+
+        template <typename T>
+        constexpr const T set(const T input_value) const noexcept {
+            return (input_value & ~mask_value<T>::mask) | value_;
+        }
+
+        template <typename Ret, typename T>
+        constexpr const Ret get(T input_value) const noexcept {
+            return (input_value & mask_value<T>::mask);
+        }
+
+        const word_t value_ = default_value;
 
         template<word_t Current_value>
         struct with_value {
