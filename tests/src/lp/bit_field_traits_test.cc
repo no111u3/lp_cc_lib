@@ -20,6 +20,7 @@
 
 #include <lp/bit_field.hh>
 #include <lp/bit_field_traits.hh>
+#include <lp/operations.hh>
 #include <type_traits.hh>
 
 template<int input_value, lp::word_t ...options>
@@ -47,13 +48,36 @@ void bit_field_traits_test() {
             int, bit_field<1, 2>>::value_of(0b1000) == 0b1110, "");
 
     static_assert(
+        const_value_of<
+            int, toggle<bit_field<1>>>::value_of(0b1000) == 0b1010, "");
+
+    static_assert(
+        const_value_of<
+            int, toggle<bit_field<1>>,
+            clear<bit_field<3>>>::value_of(0b1000) == 0b10, "");
+
+    static_assert(
+        const_value_of<
+            int, clear<bit_field<1, 2>>>::value_of(0b1110) == 0b1000, "");
+
+    static_assert(
         variable_value_of<
             int, bit_field<0>>::value_of(0b10, bit_field<0>{}) == 0b11, "");
 
     static_assert(
         variable_value_of<
+            int, toggle<bit_field<0>>>::
+                value_of(0b11, toggle<bit_field<0>>{}) == 0b10, "");
+
+    static_assert(
+        variable_value_of<
             int, bit_field<1, 2>>::
                 value_of(0b1000, bit_field<1, 2>{0b01}) == 0b1010, "");
+
+    static_assert(
+        variable_value_of<
+            int, toggle<bit_field<1, 2>>>::
+                value_of(0b1000, toggle<bit_field<1, 2>>{0b01}) == 0b1010, "");
 
     constexpr const int value1 = get_value<0b1010, 0>(),
         value2 = get_value<0b1010, 1, 2>();

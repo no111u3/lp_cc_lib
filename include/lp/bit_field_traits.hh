@@ -18,12 +18,83 @@
  * @author Boris Vinogradov
  */
 
+#include <lp/operations.hh>
 #include <lp/types.hh>
 
 #ifndef LP_CC_LIB_LP_BIT_FIELD_TRAITS_HH
 #define LP_CC_LIB_LP_BIT_FIELD_TRAITS_HH
 
 namespace lp {
+    /// Const value operation apply
+    template <typename T>
+    struct const_apply {
+        template <typename V>
+        static constexpr const V value_of(const V input_value) noexcept {
+            return T{}.template set(input_value);
+        }
+    };
+
+    template <typename T>
+    struct const_apply<set<T>> {
+        template <typename V>
+        static constexpr const V value_of(const V input_value) noexcept {
+            return T{}.template set(input_value);
+        }
+    };
+
+    template <typename T>
+    struct const_apply<clear<T>> {
+        template <typename V>
+        static constexpr const V value_of(const V input_value) noexcept {
+            return T{}.template clear(input_value);
+        }
+    };
+
+    template <typename T>
+    struct const_apply<toggle<T>> {
+        template <typename V>
+        static constexpr const V value_of(const V input_value) noexcept {
+            return T{}.template toggle(input_value);
+        }
+    };
+
+    /// Variable value operation apply
+    template <typename T>
+    struct variable_apply {
+        template <typename V>
+        static constexpr const V value_of(const T bit,
+                                          const V input_value) noexcept {
+            return bit.template set(input_value);
+        }
+    };
+
+    template <typename T>
+    struct variable_apply<set<T>> {
+        template <typename V>
+        static constexpr const V value_of(const set<T> op,
+                                          const V input_value) noexcept {
+            return op.value.template set(input_value);
+        }
+    };
+
+    template <typename T>
+    struct variable_apply<clear<T>> {
+        template <typename V>
+        static constexpr const V value_of(const clear<T> op,
+                                          const V input_value) noexcept {
+            return op.value.template clear(input_value);
+        }
+    };
+
+    template <typename T>
+    struct variable_apply<toggle<T>> {
+        template <typename V>
+        static constexpr const V value_of(const toggle<T> op,
+                                          const V input_value) noexcept {
+            return op.value.template toggle(input_value);
+        }
+    };
+
     /// Constant value of setted bits
     template <typename T, typename ...Bits>
     struct const_value_of;
@@ -46,7 +117,7 @@ namespace lp {
         static constexpr const T value_of(const T input_value) noexcept {
             return
                 const_value_of<T, Bits...>::
-                    value_of(Bit{}.template set(input_value));
+                    value_of(const_apply<Bit>::value_of(input_value));
         }
     };
 
@@ -64,10 +135,11 @@ namespace lp {
     template <typename T, typename Bit, typename ...Bits>
     struct variable_value_of<T, Bit, Bits...> {
         static constexpr const T value_of(const T value,
-            Bit bit, Bits ...bits) noexcept {
+                                          Bit bit, Bits ...bits) noexcept {
             return
                 variable_value_of<T, Bits...>::
-                    value_of(bit.template set(value), bits...);
+                    value_of(
+                        variable_apply<Bit>::value_of(bit, value), bits...);
         }
     };
 
@@ -84,11 +156,11 @@ namespace lp {
     struct get_value_of<T, Bit, Bits...> {
         template <typename Value, typename ...Values>
         static constexpr void get_value(const T value,
-            Value &out, Values &...outs) noexcept {
+                                        Value &out, Values &...outs) noexcept {
             out = Bit{}.template get<Value, T>(value);
             get_value_of<T, Bits...>:: get_value(value, outs...);
         }
     };
-}
+} // namespace lp
 
 #endif // LP_CC_LIB_LP_BIT_FIELD_TRAITS_HH
