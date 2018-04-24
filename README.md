@@ -8,9 +8,7 @@ It consist:
    - C++14 initializer list
    - C++14 algorithm (max and max_element only)
  - lepestrum bit manipulation types and helpers
-   - C++14 Lepestrum type list with type list operations
-   - C++14 bit, bit operations and bit operation traits
-   - C++14 io register, io register operations and io register operation traits
-   - C++14 associate bit with helpers
- - C++14 io modules for text based exchanges throw serial and serial base communicate channels
+   - C++14 Lepestrum elementary platform types
+   - C++14 Lepestrum type list with type list operations, and traits
+   - C++14 bit_field and bit operations markers
  - Compile and runtime based tests for everything components of library
