@@ -24,7 +24,6 @@
 #define LP_CC_LIB_LP_BIT_FIELD_HH
 
 namespace lp {
-
     /// Fovard declaration of bit field type
     template <word_t ...Params>
     struct bit_field;
@@ -52,6 +51,16 @@ namespace lp {
         template <typename T>
         constexpr const T set(const T input_value) const noexcept {
             return input_value | value_ << position;
+        }
+
+        template <typename T>
+        constexpr const T clear(const T input_value) const noexcept {
+            return input_value & ~mask_value<T>::mask;
+        }
+
+        template <typename T>
+        constexpr const T toggle(const T input_value) const noexcept {
+            return input_value ^ mask_value<T>::mask;
         }
 
         template <typename Ret, typename T>
@@ -83,11 +92,22 @@ namespace lp {
 
         constexpr bit_field() noexcept = default;
         constexpr explicit bit_field(word_t from_value) noexcept
-        : value_{from_value} {}
+        : value_{from_value & default_value} {}
 
         template <typename T>
         constexpr const T set(const T input_value) const noexcept {
-            return (input_value & ~mask_value<T>::mask) | value_ << position;
+            return (input_value & ~mask_value<T>::mask)
+                | value_ << position;
+        }
+
+        template <typename T>
+        constexpr const T clear(const T input_value) const noexcept {
+            return input_value & ~mask_value<T>::mask;
+        }
+
+        template <typename T>
+        constexpr const T toggle(const T input_value) const noexcept {
+            return set(input_value);
         }
 
         template <typename Ret, typename T>
@@ -128,6 +148,16 @@ namespace lp {
             return (input_value & ~mask_value<T>::mask) | value_;
         }
 
+        template <typename T>
+        constexpr const T clear(const T input_value) const noexcept {
+            return input_value & ~mask_value<T>::mask;
+        }
+
+        template <typename T>
+        constexpr const T toggle(const T input_value) const noexcept {
+            return input_value ^ ~(value_ << position);
+        }
+
         template <typename Ret, typename T>
         constexpr const Ret get(T input_value) const noexcept {
             return (input_value & mask_value<T>::mask);
@@ -142,7 +172,6 @@ namespace lp {
                 mask_value<T, static_cast<T>(Current_value)> {};
         };
     };
-
 } // namespace lp
 
 #endif // LP_CC_LIB_LP_BIT_FIELD_HH
