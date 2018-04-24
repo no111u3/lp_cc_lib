@@ -48,6 +48,6 @@ namespace lp {
 
     // time
     using cpu_time_t = u64_t;
-}
+} // namespace lp
 
 #endif // LP_CC_LIB_LP_TYPES_HH

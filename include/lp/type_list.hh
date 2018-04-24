@@ -182,6 +182,6 @@ namespace lp {
 
         static constexpr const word_t size = sizeof...(Types);
     };
-}
+} // namespace lp
 
 #endif // LP_CC_LIB_LP_TYPE_LIST_HH
