@@ -122,6 +122,30 @@ namespace lp {
             template <typename T>
             struct mask_value : bit_field::
                 template mask_value<T, static_cast<T>(Current_value)> {};
+
+            constexpr with_value() noexcept = default;
+
+            template <typename T>
+            constexpr const T set(const T input_value) const noexcept {
+                return bit.set<T>(input_value);
+            }
+
+            template <typename T>
+            constexpr const T clear(const T input_value) const noexcept {
+                return bit.clear<T>(input_value);
+            }
+
+            template <typename T>
+            constexpr const T toggle(const T input_value) const noexcept {
+                return bit.set<T>(input_value);
+            }
+
+            template <typename Ret, typename T>
+            constexpr const Ret get(T input_value) const noexcept {
+                return bit.get<Ret, T>(input_value);
+            }
+
+            const bit_field bit{Current_value};
         };
     };
 

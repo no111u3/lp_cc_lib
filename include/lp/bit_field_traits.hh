@@ -19,6 +19,7 @@
  */
 
 #include <lp/operations.hh>
+#include <lp/type_list.hh>
 #include <lp/types.hh>
 
 #ifndef LP_CC_LIB_LP_BIT_FIELD_TRAITS_HH
@@ -105,6 +106,18 @@ namespace lp {
 
         static constexpr const T value_of(const T input_value) noexcept {
             return input_value;
+        }
+    };
+
+    template <typename T, typename ...Bits>
+    struct const_value_of<T, type_list<Bits...>> {
+        static constexpr const T value =
+            const_value_of<T, Bits...>::value;
+
+        static constexpr const T value_of(const T input_value) noexcept {
+            return
+                const_value_of<T, Bits...>::
+                    value_of(input_value);
         }
     };
 

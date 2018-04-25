@@ -54,7 +54,7 @@ void bit_field_test() {
 
     static_assert(bit_field<3, 2>{0b10}.clear<int>(0b10001) == 0b1, "");
 
-    static_assert(bit_field<3, 2>{0b10}.toggle<int>(0b10001) == 0b10001, "");
+    static_assert(bit_field<3, 2>{0b10}.toggle<int>(0b1001) == 0b10001, "");
 
     static_assert(bit_field<3, 2>{}.get<int, int>(0b10001) == 0b10, "");
 
@@ -68,4 +68,16 @@ void bit_field_test() {
     static_assert(
         bit_field<2, 3>::with_value<0b101>::
             mask_value<unsigned>::mask == 0b11100, "");
+
+    static_assert(
+        bit_field<2, 3>::with_value<0b101>{}.
+            set<int>(0b0) == 0b10100, "");
+
+    static_assert(
+        bit_field<2, 3>::with_value<0b101>{}.
+            toggle<int>(0b01100) == 0b10100, "");
+
+    static_assert(
+        bit_field<2, 3>::with_value<0b101>{}.
+            clear<int>(0b01100) == 0b0, "");
 }

@@ -21,6 +21,8 @@
 #include <lp/bit_field.hh>
 #include <lp/bit_field_traits.hh>
 #include <lp/operations.hh>
+#include <lp/type_list.hh>
+#include <lp/types.hh>
 #include <type_traits.hh>
 
 template<int input_value, lp::word_t ...options>
@@ -40,6 +42,10 @@ void bit_field_traits_test() {
         const_value_of<int, bit_field<0>, bit_field<2>>::value == 0b101, "");
 
     static_assert(
+        const_value_of<int,
+            type_list<bit_field<0>, bit_field<2>>>::value == 0b101, "");
+
+    static_assert(
         const_value_of<
             int, bit_field<0>, bit_field<2>>::value_of(0b10) == 0b111, "");
 
@@ -55,6 +61,11 @@ void bit_field_traits_test() {
         const_value_of<
             int, toggle<bit_field<1>>,
             clear<bit_field<3>>>::value_of(0b1000) == 0b10, "");
+
+    static_assert(
+        const_value_of<
+            int, type_list<toggle<bit_field<1>>,
+            clear<bit_field<3>>>>::value_of(0b1000) == 0b10, "");
 
     static_assert(
         const_value_of<
