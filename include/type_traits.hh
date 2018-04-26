@@ -900,6 +900,29 @@ namespace std {
     template <typename T>
     using decay_t = typename decay<T>::type;
 
+    template<typename T>
+    class reference_wrapper;
+
+    namespace internal {
+    template <typename T>
+    struct strip_reference_wrapper {
+        using type = T;
+    };
+
+    template <typename T>
+    struct strip_reference_wrapper<reference_wrapper<T>> {
+        using type = T &;
+    };
+    } // namespace internal
+
+    /// Decay and strip
+    template <typename T>
+    struct decay_and_strip {
+        using type =
+            typename internal::strip_reference_wrapper<
+                typename decay<T>::type>::type;
+    };
+
     /// Is unsigned
     template <typename T>
     struct is_unsigned
