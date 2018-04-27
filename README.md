@@ -14,4 +14,5 @@ It consist:
    - C++14 Lepestrum type list with type list operations, and traits
    - C++14 bit_field and bit operations markers
    - C++14 associate type marker and wrappers
+   - C++14 tuple traits - extend functions
  - Compile and runtime based tests for everything components of library
