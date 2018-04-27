@@ -782,20 +782,22 @@ namespace std {
     struct is_array_unknown_bounds
         : and_pred<is_array<T>, not_pred<extent<T>>>::type {};
 
-    /// Declare value
-    template <typename T>
-    struct declval_h {
-        static add_rvalue_reference_t<T> delegate();
-    };
-
     /// Is array with known bounds
     template <typename T>
     struct is_array_known_bounds
         : integral_constant<bool, (extent<T>::value > 0)> {};
 
+    /// Declare value
+    namespace internal {
+        template <typename T>
+        struct declval_h {
+            static add_rvalue_reference_t<T> delegate();
+        };
+    }
+
     template <typename T>
     inline add_rvalue_reference_t<T> declval() noexcept {
-        return declval_h<T>::delegate();
+        return internal::declval_h<T>::delegate();
     }
 
     /// Is convertible
@@ -904,24 +906,21 @@ namespace std {
     class reference_wrapper;
 
     namespace internal {
-    template <typename T>
-    struct strip_reference_wrapper {
-        using type = T;
-    };
+        template <typename T>
+        struct unwrap_refwrapper {
+            using type = T;
+        };
 
-    template <typename T>
-    struct strip_reference_wrapper<reference_wrapper<T>> {
-        using type = T &;
-    };
+        template <typename T>
+        struct unwrap_refwrapper<reference_wrapper<T>> {
+            using type = T &;
+        };
     } // namespace internal
 
-    /// Decay and strip
+    /// Special decay type
     template <typename T>
-    struct decay_and_strip {
-        using type =
-            typename internal::strip_reference_wrapper<
-                typename decay<T>::type>::type;
-    };
+    using special_decay_t =
+        typename internal::unwrap_refwrapper<decay_t<T>>::type;
 
     /// Is unsigned
     template <typename T>
