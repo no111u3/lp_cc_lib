@@ -142,8 +142,16 @@ namespace std {
                 : inherit{}, base{} {}
 
             explicit constexpr
-            tuple_impl(const Head head, const Tail ...tail) noexcept
+            tuple_impl(const Head &head, const Tail &...tail) noexcept
                 : inherit{tail...}, base{head} {}
+
+            template <typename U_head, typename ...U_tail,
+                typename =
+                    enable_if_t<sizeof...(Tail) == sizeof...(U_tail)>> 
+            explicit constexpr
+            tuple_impl(U_head &&head, U_tail &&...tail) noexcept
+                : inherit(forward<U_tail>(tail)...),
+                base(forward<U_head>(head)) { }
 
             constexpr tuple_impl(const tuple_impl &) noexcept = default;
 
@@ -482,8 +490,9 @@ namespace std {
         return internal::get_h_2<T>(tuple_);
     }
 
+    /// Compare operators for tuple
     namespace internal {
-        template<typename T, typename U, size_t i, size_t size>
+        template <typename T, typename U, size_t i, size_t size>
         struct tuple_compare {
             static constexpr bool eq(const T &t, const U &u) noexcept {
                 return bool(get<i>(t) == get<i>(u))
@@ -497,7 +506,7 @@ namespace std {
             }
         };
 
-        template<typename T, typename U, size_t size>
+        template <typename T, typename U, size_t size>
         struct tuple_compare<T, U, size, size> {
             static constexpr bool eq(const T &, const U &) noexcept {
                 return true;
@@ -509,7 +518,7 @@ namespace std {
         };
     } // namespace internal
 
-    template<typename ...T_types, typename ...U_types>
+    template <typename ...T_types, typename ...U_types>
     constexpr bool operator ==
     (const tuple<T_types ...>& t, const tuple<U_types ...>& u) noexcept {
         static_assert(sizeof...(T_types) == sizeof...(U_types),
@@ -519,7 +528,7 @@ namespace std {
         return compare::eq(t, u);
     }
 
-    template<typename ...T_types, typename ...U_types>
+    template <typename ...T_types, typename ...U_types>
     constexpr bool operator <
     (const tuple<T_types ...> &t, const tuple<U_types ...> &u) noexcept {
         static_assert(sizeof...(T_types) == sizeof...(U_types),
@@ -529,35 +538,164 @@ namespace std {
         return compare::less(t, u);
     }
 
-    template<typename ...T_types, typename ...U_types>
+    template <typename ...T_types, typename ...U_types>
     constexpr bool operator !=
     (const tuple<T_types ...> &t, const tuple<U_types ...> &u) noexcept {
         return !(t == u);
     }
 
-    template<typename ...T_types, typename ...U_types>
+    template <typename ...T_types, typename ...U_types>
     constexpr bool operator >
     (const tuple<T_types ...> &t, const tuple<U_types ...> &u) noexcept {
         return u < t;
     }
 
-    template<typename ...T_types, typename ...U_types>
+    template <typename ...T_types, typename ...U_types>
     constexpr bool operator <=
     (const tuple<T_types ...> &t, const tuple<U_types ...> &u) noexcept {
         return !(u < t);
     }
 
-    template<typename ...T_types, typename ...U_types>
+    template <typename ...T_types, typename ...U_types>
     constexpr bool operator >=
     (const tuple<T_types ...> &t, const tuple<U_types ...> &u) noexcept {
         return !(t < u);
     }
 
-    template<typename ...Types>
-    constexpr tuple<typename decay_and_strip<Types>::type...>
-    make_tuple(Types &&...args) noexcept {
-        using result_type = tuple<typename decay_and_strip<Types>::type ...>;
-        return result_type(forward<Types>(args)...);
+    /// Make tuple from args
+    template <typename ...Types>
+    constexpr auto make_tuple(Types &&...args) noexcept {
+        return tuple<special_decay_t<Types> ...>(forward<Types>(args)...);
+    }
+
+    /// Ignore type for tie
+    namespace internal {
+        struct ignore_t {
+            template <class T>
+            constexpr const ignore_t &
+            operator = (const T &) const noexcept { return *this; }
+        };
+    } // namespace internal
+
+    const internal::ignore_t ignore{};
+
+    /// Make tuple of lvalue references to its arguments or instances of ignore
+    template <typename ...Types>
+    constexpr auto tie(Types &...args) noexcept {
+        return tuple<Types &...>(args...);
+    }
+
+    /// Make tupe of references to the arguments
+    template <typename ...Types>
+    constexpr auto forward_as_tuple(Types &&...args) noexcept {
+        return tuple<Types &&...>(forward<Types>(args)...);
+    }
+
+    /// Construct tuple from concatenation off all tuples in args
+    namespace internal {
+        template <typename...>
+        struct combine_tuples;
+
+        template <>
+        struct combine_tuples<> {
+            using type = tuple<>;
+        };
+
+        template <typename ...Ts>
+        struct combine_tuples<tuple<Ts ...>> {
+            using type = tuple<Ts...>;
+        };
+
+        template <typename ...T1s, typename ...T2s, typename ...Rem>
+        struct combine_tuples<tuple<T1s...>, tuple<T2s...>, Rem...> {
+            using type =
+                typename combine_tuples<tuple<T1s..., T2s...>, Rem...>::type;
+        };
+
+        template <size_t, typename, typename, size_t>
+        struct make_tuple_impl;
+
+        template <size_t Index, typename Tuple, typename ...Tp, size_t Nm>
+        struct make_tuple_impl<Index, tuple<Tp...>, Tuple, Nm>
+            : make_tuple_impl<
+                Index + 1,
+                tuple<Tp..., tuple_element_t<Index, Tuple>>, Tuple, Nm> {};
+
+        template <size_t Nm, typename Tuple, typename ...Tp>
+        struct make_tuple_impl<Nm, tuple<Tp...>, Tuple, Nm> {
+            using type = tuple<Tp...>;
+        };
+
+        template <typename Tuple>
+        struct do_make_tuple
+            : make_tuple_impl<0, tuple<>, Tuple, tuple_size<Tuple>::value> {};
+
+        template <typename Tuple>
+        struct make_tuple
+            : public do_make_tuple<typename remove_cv<
+                typename remove_reference<Tuple>::type>::type> {};
+
+        template <typename ...Typles>
+        struct tuple_cat_result {
+            using type = typename combine_tuples
+                <typename make_tuple<Typles>::type...>::type;
+        };
+
+        template <typename...>
+        struct make_1st_indices;
+
+        template <>
+        struct make_1st_indices<> {
+            using type = index_tuple<>;
+        };
+
+        template <typename Tp, typename ...Tpls>
+        struct make_1st_indices<Tp, Tpls...> {
+            using type =
+                typename build_index_tuple<tuple_size<
+                    remove_reference_t<Tp>>::value>::type;
+        };
+
+        template <typename Ret, typename Indices, typename ...Typles>
+        struct tuple_concater;
+
+        template <typename Ret, size_t ...Is, typename Tp, typename ...Typles>
+        struct tuple_concater<Ret, index_tuple<Is...>, Tp, Typles...> {
+            template <typename ...Us>
+            static constexpr Ret
+            apply_do(Tp &&tp, Typles &&...tps, Us &&...us) noexcept {
+                using idx_t = typename make_1st_indices<Typles...>::type;
+                using next = tuple_concater<Ret, idx_t, Typles...>;
+                return next::apply_do(
+                    forward<Typles>(tps)...,
+                    forward<Us>(us)...,
+                    get<Is>(forward<Tp>(tp))...);
+            }
+        };
+
+        template <typename Ret>
+        struct tuple_concater<Ret, index_tuple<>> {
+            template <typename ...Us>
+            static constexpr Ret apply_do(Us &&...us) noexcept {
+                return Ret(forward<Us>(us)...);
+            }
+        };
+    }
+
+    template <typename ...Typles>
+    constexpr auto tuple_cat(Typles &&...args) noexcept {
+        using ret_t = typename internal::tuple_cat_result<Typles ...>::type;
+        using idx_t = typename internal::make_1st_indices<Typles ...>::type;
+        using concater_t = internal::tuple_concater<ret_t, idx_t, Typles...>;
+
+        return concater_t::apply_do(forward<Typles>(args)...);
+    }
+
+    /// Swap
+    template <typename... Types>
+    constexpr inline void swap(tuple<Types...>& x, tuple<Types...>& y)
+        noexcept(noexcept(x.swap(y))) {
+            x.swap(y);
     }
 } // namespace std
 

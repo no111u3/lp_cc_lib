@@ -27,6 +27,36 @@ struct A {
 struct B final {
 };
 
+constexpr auto f() {
+    constexpr int x = 5;
+    return std::make_tuple(x, 7);
+}
+
+constexpr auto test_tie() {
+    int a = 0, b = 0;
+
+    std::tie(a, b) = f();
+
+    return a == 5 && b == 7;
+}
+
+constexpr auto test_tie_2() {
+    int a = 0;
+
+    std::tie(std::ignore, a) = f();
+
+    return a == 7;
+}
+
+constexpr auto test_swap() {
+    auto a = std::make_tuple(1, 2);
+    auto b = std::make_tuple(3, 4);
+
+    std::swap(a, b);
+
+    return a == std::make_tuple(3, 4) && b == std::make_tuple(1, 2);
+}
+
 void tuple_test() {
     using namespace std;
     constexpr tuple<> t{};
@@ -81,7 +111,10 @@ void tuple_test() {
     static_assert(get<0>(t11) == 4 &&
         get<1>(t11) == 8 && get<2>(t11) == 'A' && get<3>(t11) == 4.6, "");
 
-    static_assert(make_tuple(4, 8) == std::tuple<int, int>(4, 8), "");
+    static_assert(get<char>(t3) == 'A' && get<int>(t3) == 10 &&
+        get<double>(t3) == 5.6, "");
+
+    static_assert(make_tuple(4, 8) == tuple<int, int>(4, 8), "");
 
     static_assert(make_tuple(4, 6) == make_tuple(4, 6), "");
 
@@ -90,4 +123,17 @@ void tuple_test() {
     static_assert(make_tuple(5, 2) < make_tuple(5, 3), "");
 
     static_assert(make_tuple(4, 1) > make_tuple(2, 9), "");
+
+    static_assert(test_tie(), "");
+
+    static_assert(test_tie_2(), "");
+
+    auto t12 = forward_as_tuple(20, 'A');
+    static_assert(
+        is_same<decltype(t12), tuple<int &&, char &&>>::value, "");
+
+    static_assert(test_swap(), "");
+
+    static_assert(
+        tuple_cat(t1, t2, t3) == make_tuple(0, 'A', 10, 'A', 10, 5.6), "");
 }
