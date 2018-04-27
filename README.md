@@ -7,7 +7,7 @@ It consist:
    - C++14 std types - support generic types
    - C++14 initializer list
    - C++14 algorithm (max and max_element only)
-   - C++14 utility (base implementation)
+   - C++14 utility (main implementation of features)
    - C++14 tuple (main implementation of features)
  - lepestrum bit manipulation types and helpers
    - C++14 Lepestrum elementary platform types

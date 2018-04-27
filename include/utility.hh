@@ -25,6 +25,64 @@
 #define LP_CC_LIB_UTILITY_HH
 
 namespace std {
+    namespace internal {
+        template <size_t ...Indexes>
+        struct index_tuple {
+            using next = index_tuple<Indexes..., sizeof...(Indexes)>;
+        };
+
+        template <size_t Num>
+        struct build_index_tuple {
+            using type = typename build_index_tuple<Num - 1>::type::next;
+        };
+
+        template <>
+        struct build_index_tuple<0> {
+            using type = index_tuple<>;
+        };
+    } // namespace internal
+
+    /// Integer sequence
+    template<typename T, T ...Index>
+    struct integer_sequence {
+        using value_type = T;
+
+        static constexpr size_t size() noexcept {
+            return sizeof...(Index);
+        }
+    };
+
+    /// Make integer sequence
+    namespace internal {
+        template<typename T, T Num, typename ISeq =
+            typename build_index_tuple<Num>::type>
+        struct make_integer_sequence_h;
+
+        template<typename T, T Num, size_t ...Index>
+        struct make_integer_sequence_h<T, Num, index_tuple<Index...>> {
+            static_assert(Num >= 0,
+                "Cannot make integer sequence of negative length");
+
+            using type = integer_sequence<T, static_cast<T>(Index)...>;
+        };
+    } // namespace internal
+
+    template<typename T, T Num>
+    using make_integer_sequence
+        = typename internal::make_integer_sequence_h<T, Num>::type;
+
+    /// Index sequence
+    template<size_t ...Index>
+    using index_sequence = integer_sequence<size_t, Index...>;
+
+    /// Make index sequence
+    template<size_t Num>
+    using make_index_sequence = make_integer_sequence<size_t, Num>;
+
+    /// Index sequence for
+    template<typename ...Types>
+    using index_sequence_for = make_index_sequence<sizeof...(Types)>;
+
     /// Forward lvalue
     template <typename T>
     constexpr T && forward(typename remove_reference<T>::type &t) noexcept {
